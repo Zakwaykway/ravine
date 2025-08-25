@@ -45,41 +45,61 @@ points:
       spread: kx
       padding: ky
     rows:
-      bottom:
-      home:
-      top:
+      bottom.row_net: P0
+      home.row_net: P2
+      top.row_net: P3
     columns.pinky:
+      key.column_net: P4
       rows:
         bottom.skip: true
     columns.ring:
       key:
         stagger: ring_stagger
         splay: -pinky_splay
+        column_net: P5
     columns.middle:
       key:
         stagger: middle_stagger
         splay: -ring_splay
+        column_net: P6
     columns.index:
       key:
         stagger: index_stagger
         splay: -middle_splay
+        column_net: P7
     columns.inner:
-      key.stagger: inner_stagger
+      key:
+        stagger: inner_stagger
+        column_net: P8
       rows:
         bottom.skip: true
   zones.thumb: # thumbs
     anchor:
       ref: matrix_index_bottom
       shift: [thumb_shiftx, thumb_shifty]
-    key.$extends: points.zones.matrix.key
+    key:
+      $extends: points.zones.matrix.key
+      row_net: P3
     columns:
       tucky:
         key:
           splay: thumb_base_angle
+          column_net: P4
       reachy:
         key:
           splay: thumb_splay
           stagger: thumb_stagger
+          column_net: P8
+  zones.encoder: # thumbs
+    anchor:
+      ref: matrix_middle_bottom
+      shift: [0, -ky]
+    key:
+      $extends: points.zones.matrix.key
+    columns:
+      tucky:
+        key:
+        
   zones.reference_top_center:  # mcu ref
     anchor:
       ref: matrix_inner_top
@@ -155,6 +175,7 @@ outlines:
         where:
           - /matrix_.*/
           - /thumb_.*/
+          - /encoder_.*/
         corner: 0.5
     _keycaps:
       - what: rectangle
@@ -213,6 +234,7 @@ pcbs:
         where:
           - /matrix_.*/
           - /thumb_.*/
+          - /encoder_.*/
         params:
           reversible: true
           include_thru_hole_smd_pads: true
@@ -221,16 +243,24 @@ pcbs:
         adjust:
           shift: [4.5, -8.5]
           rotate: 180
-      xiao: # other components
+      encoder:
+        what: ceoloide/rotary_encoder_ec11_ec12
+        where: /encoder_.*/
+        params:
+          reversible: true
+          S1: P0
+          S2: P9
+          A: P2
+          C: P3
+
+      xiao:
         what: xiao
         where: mcu
       reset:
-        what: button
+        what:  ceoloide/reset_switch_tht_top
         where: reset
         params:
-          from: RST
-          to: GND
-          side: B
+          reversible: true
   ravine_switchplate:
     outlines:
       main:
