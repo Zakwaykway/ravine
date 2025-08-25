@@ -21,23 +21,23 @@ units:
   mcu_y: 0
 
   pinky_splay: 5
-  ring_stagger: .75ky # edited
+  ring_stagger: .75ky
   ring_splay: 0
-  middle_stagger: 0.25ky # change?
+  middle_stagger: 0.2ky
   middle_splay: 0
-  index_stagger: -0.45ky # change
-  inner_stagger: -0.35ky
+  index_stagger: -0.45ky
+  inner_stagger: -0.4ky
   thumb_base_angle: -16
   thumb_splay: -0
   thumb_adj: 0
-  thumb_stagger: -0.ky 
+  thumb_stagger: 0.125ky
   thumb_shiftx: 0.45kx # change
   thumb_shifty: -1.1ky
 
 
 points:
   zones.matrix: 
-    anchor.shift: [90, -70]
+    anchor.shift: [160, -185]
     rotate: pinky_splay + ring_splay + middle_splay
     key:
       width: capx
@@ -51,66 +51,22 @@ points:
     columns.pinky:
       rows:
         bottom.skip: true
-        home:
-          row_net: P2
-          column_net: P6
-        top:
-          row_net: P0
-          column_net: P6
     columns.ring:
       key:
-
         stagger: ring_stagger
         splay: -pinky_splay
-      rows:
-        bottom:
-          row_net: P4
-          column_net: P6
-        home:
-          row_net: P3
-          column_net: P6
-        top:
-          row_net: P1
-          column_net: P6
     columns.middle:
       key:
         stagger: middle_stagger
         splay: -ring_splay
-      rows:
-        bottom:
-          row_net: P5
-          column_net: P6
-        home:
-          row_net: P2
-          column_net: P7
-        top:
-          row_net: P0
-          column_net: P7
     columns.index:
       key:
         stagger: index_stagger
         splay: -middle_splay
-      rows:
-        bottom:
-          row_net: P4
-          column_net: P7
-        home:
-          row_net: P3
-          column_net: P7
-        top:
-          row_net: P1
-          column_net: P7
     columns.inner:
       key.stagger: inner_stagger
       rows:
         bottom.skip: true
-        home:
-          row_net: P2
-          column_net: P8
-        top:
-          row_net: P0
-          column_net: P8
-
   zones.thumb: # thumbs
     anchor:
       ref: matrix_index_bottom
@@ -120,14 +76,10 @@ points:
       tucky:
         key:
           splay: thumb_base_angle
-          row_net: P5
-          column_net: P7
       reachy:
         key:
           splay: thumb_splay
           stagger: thumb_stagger
-          row_net: P4
-          column_net: P8
   zones.reference_top_center:  # mcu ref
     anchor:
       ref: matrix_inner_top
@@ -135,7 +87,6 @@ points:
   zones.mcu:
     anchor:
       ref: reference_top_center
-      shift: [0, -0.5xiao_y]
     key:
       width: xiao_x
       height: xiao_y
@@ -145,7 +96,7 @@ points:
       height: 4.9
     anchor:
       ref: reference_top_center
-      shift: [1.5, -4.9/2- 7]
+      shift: [1.5, 0]
 
 outlines:
     _key_outline:
@@ -249,31 +200,12 @@ pcbs:
       main:
         outline: _board
     footprints:
-      MX:
+      switches_main:
         what: ceoloide/switch_mx
         where:
           - /matrix_.*/
           - /thumb_.*/
         params:
-          reversible: true
-          hotswap_pads_same_side: true
-          include_plated_holes: true
-          include_centerhole_net: true
-          from: "{{row_net}}"
-          to: "{{colrow}}"
-      choc:
-        what: ceoloide/switch_choc_v1_v2
-        where:
-          - /matrix_.*/
-          - /thumb_.*/
-        adjust:
-          rotate: 180
-        params:
-          choc_v2_support: false
-          hotswap_pads_same_side: true
-          reversible: true
-          include_plated_holes: false
-          include_centerhole_net: false
           from: "{{row_net}}"
           to: "{{colrow}}"
       diodes:
@@ -287,7 +219,8 @@ pcbs:
           from: "{{colrow}}"
           to: "{{column_net}}"
         adjust:
-          shift: [0, -10]
+          shift: [4.5, -8.5]
+          rotate: 180
       xiao: # other components
         what: xiao
         where: mcu
