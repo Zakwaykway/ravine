@@ -92,8 +92,8 @@ points:
           column_net: P8
   zones.encoder: # thumbs
     anchor:
-      ref: matrix_middle_bottom
-      shift: [0, -ky]
+      ref: thumb_tucky
+      shift: [-ky, -2thumb_stagger]
     key:
       $extends: points.zones.matrix.key
     columns:
@@ -229,8 +229,11 @@ pcbs:
         params:
           from: "{{row_net}}"
           to: "{{colrow}}"
+          include_plated_holes: true
+          choc_v1_stabilizers_diameter: 1.7
           reversible: true
           hotswap_pads_same_side: true
+          include_keycap: true
 
       diodes:
         what: ceoloide/diode_tht_sod123
