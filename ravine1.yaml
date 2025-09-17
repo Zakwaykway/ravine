@@ -45,33 +45,38 @@ points:
       spread: kx
       padding: ky
     rows:
-      bottom.row_net: P0
-      home.row_net: P2
-      top.row_net: P3
+      bottom.row_net: P6
+      home.row_net: P5
+      top.row_net: P4
     columns.pinky:
-      key.column_net: P4
+      key.column_net: P0
       rows:
         bottom.skip: true
     columns.ring:
       key:
         stagger: ring_stagger
         splay: -pinky_splay
-        column_net: P5
+        column_net: P1
+      rows.bottom.column_net: P0
     columns.middle:
       key:
         stagger: middle_stagger
         splay: -ring_splay
-        column_net: P6
+        column_net: P2
+      rows.bottom.column_net: P1
     columns.index:
       key:
         stagger: index_stagger
         splay: -middle_splay
-        column_net: P7
+        column_net: P3
+      rows.bottom.column_net: P2
     columns.inner:
       key:
         stagger: inner_stagger
-        column_net: P8
+        column_net: P3
       rows:
+        top.row_net: P6
+        home.row_net: P7
         bottom.skip: true
   zones.thumb: # thumbs
     anchor:
@@ -79,17 +84,15 @@ points:
       shift: [thumb_shiftx, thumb_shifty]
     key:
       $extends: points.zones.matrix.key
-      row_net: P3
+      row_net: P7
     columns:
-      tucky:
-        key:
-          splay: thumb_base_angle
-          column_net: P4
-      reachy:
-        key:
-          splay: thumb_splay
-          stagger: thumb_stagger
-          column_net: P8
+      tucky.key:
+        splay: thumb_base_angle
+        column_net: P1
+      reachy.key:
+        splay: thumb_splay
+        stagger: thumb_stagger
+        column_net: P2
   zones.encoder: # thumbs
     anchor:
       ref: thumb_tucky
@@ -97,8 +100,8 @@ points:
     key:
       $extends: points.zones.matrix.key
     columns:
-      tucky:
-        key:
+      enccol.rows.encrow.column_net: P0
+      enccol.rows.encrow.row_net: P7
         
   zones.reference_top_center:  # mcu ref
     anchor:
@@ -254,10 +257,10 @@ pcbs:
         where: /encoder_.*/
         params:
           reversible: true
-          S1: P0
-          S2: P9
-          A: P2
-          C: P3
+          S1: "{{column_net}}"
+          S2: "{{row_net}}"
+          A: P8
+          C: P9
 
       xiao:
         what: xiao
@@ -267,6 +270,8 @@ pcbs:
         where: reset
         params:
           reversible: true
+          from: RST
+          to: GND
   ravine_switchplate:
     outlines:
       main:
