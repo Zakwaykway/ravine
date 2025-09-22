@@ -17,7 +17,7 @@ units:
   b: 0.1kx # bind
   p: 0.45kx # polygon
 
-  mcu_x: 0
+  mcu_x: 0 # manual offset
   mcu_y: 0
 
   pinky_splay: 5
@@ -31,7 +31,7 @@ units:
   thumb_splay: -0
   thumb_adj: 0
   thumb_stagger: 0.125ky
-  thumb_shiftx: 0.45kx # change
+  thumb_shiftx: 0.45kx # locational
   thumb_shifty: -1.1ky
 
 
@@ -119,7 +119,19 @@ points:
       height: 4.9
     anchor:
       ref: reference_top_center
-      shift: [1.5, 0]
+      shift: [0, 0]
+  zones.slider: # power switch
+    key:
+      width: 9.5
+      height: 7.75
+    anchor:
+      aggregate.parts: [matrix_inner_home, thumb_reachy]
+  zones.jst: # battery connector
+    key:
+    anchor:
+      ref: matrix_middle_bottom
+      shift: [kx/2.5, -ky/1.3]
+      rotate: -90
 
 outlines:
     _key_outline:
@@ -199,13 +211,22 @@ outlines:
       - what: rectangle
         where: reset
         size: [8, 4.9]
+    _slider:
+      - what: rectangle
+        where: slider
+        size: [9.5, 7.75]
+    _jst:
+      - what: rectangle
+        where: jst
     debug:
       - ^_board
       - ^_switches
-      - ^_mcu_hole
-      - ^_mcu
-      - ^_reset
       - ^_keycaps
+      - ^_mcu
+      - ^_mcu_hole
+      - ^_reset
+      - ^_slider
+      - ^_jst
     top_view:
       - _board
       - ^_keycaps
@@ -252,6 +273,7 @@ pcbs:
         adjust:
           shift: [4.5, -8.5]
           rotate: 180
+
       encoder:
         what: ceoloide/rotary_encoder_ec11_ec12
         where: /encoder_.*/
@@ -265,13 +287,30 @@ pcbs:
       xiao:
         what: xiao
         where: mcu
+
       reset:
-        what:  ceoloide/reset_switch_tht_top
+        what: placeholder3
         where: reset
         params:
-          reversible: true
-          from: RST
-          to: GND
+          designator: RESET
+          P1: RST
+          P2: GND
+
+      slider:
+        what: placeholder3
+        where: slider
+        params:
+          designator: SLIDER
+          P1: battery
+          P2: BAT_POS
+          P3: ''
+
+      jst:
+        what: ceoloide/battery_connector_jst_ph_2
+        where: jst
+        params:
+          BAT_P: battery
+
   ravine_switchplate:
     outlines:
       main:
