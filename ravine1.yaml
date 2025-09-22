@@ -118,20 +118,32 @@ points:
       width: 8
       height: 4.9
     anchor:
-      ref: reference_top_center
-      shift: [0, 0]
+      ref: matrix_inner_home
+      shift: [-kx/2+8/2, -ky/2-4.9/2]
   zones.slider: # power switch
     key:
       width: 9.5
       height: 7.75
     anchor:
-      aggregate.parts: [matrix_inner_home, thumb_reachy]
+      ref: matrix_inner_home
+      shift: [kx/2-9.5/2, -ky/2 -7.75/2] 
   zones.jst: # battery connector
-    key:
     anchor:
       ref: matrix_middle_bottom
       shift: [kx/2.5, -ky/1.3]
       rotate: -90
+    key:
+      width: 5
+      height: 10
+      spread: 2
+    columns:
+      f.key:
+        top_net: battery
+        bottom_net: GND
+      b.key:
+        top_net: GND
+        bottom_net: battery
+
 
 outlines:
     _key_outline:
@@ -217,9 +229,10 @@ outlines:
         size: [9.5, 7.75]
     _jst:
       - what: rectangle
-        where: jst
+        where: /jst_.*/
+
     debug:
-      - ^_board
+      - _board
       - ^_switches
       - ^_keycaps
       - ^_mcu
@@ -289,15 +302,16 @@ pcbs:
         where: mcu
 
       reset:
-        what: placeholder3
+        what: button
         where: reset
         params:
           designator: RESET
-          P1: RST
-          P2: GND
+          side: '*'
+          from: RST
+          to: GND
 
       slider:
-        what: placeholder3
+        what: placeholder
         where: slider
         params:
           designator: SLIDER
@@ -307,9 +321,11 @@ pcbs:
 
       jst:
         what: ceoloide/battery_connector_jst_ph_2
-        where: jst
+        where: /jst_.*/
         params:
-          BAT_P: battery
+          reversible: true
+          BAT_P: "{{top_net}}"
+          BAT_N: "{{bottom_net}}"
 
   ravine_switchplate:
     outlines:
