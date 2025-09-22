@@ -178,23 +178,9 @@ outlines:
           - ref: thumb_tucky
             shift: [-p, -p]
         fillet: 0
-    _mousebites:
-      # vert bot
-      - what: rectangle
-        size: [1.1, 11]
-        where: /_.*pinky_bottom/
-        adjust: 
-          shift: [0.5kx, 0.5ky -4]
-      # horiz bot
-      - what: rectangle
-        size: [15.5, 1]
-        where: /_.*pinky_bottom/
-        adjust: 
-          shift: [0, 0.5ky]
 
     _board:
       - _key_outline
-      - -_mousebites
 
     _switches:
       - what: rectangle
@@ -262,7 +248,7 @@ pcbs:
         what: ceoloide/switch_choc_v1_v2
         where:
           - /matrix_.*/
-          - /thumb_.*/
+          - /thumb_.*/ 
         params:
           from: "{{row_net}}"
           to: "{{colrow}}"
@@ -286,6 +272,29 @@ pcbs:
         adjust:
           shift: [4.5, -8.5]
           rotate: 180
+
+      test:
+        what: ceoloide/switch_mx
+        where:
+          - aggregate.parts: [matrix_pinky_top, matrix_pinky_home]
+            shift: [kx/2+5, 0]
+          - aggregate.parts: [matrix_ring_top, matrix_middle_top]
+            shift: [1, -ky/2-2]
+            rotate: 180
+        params:
+          from: ''
+          to: ''
+
+      test2:
+        what: ceoloide/power_switch_smd_side
+        where: # when there's an aggregate present in 'where',
+               # it forces there to only be ONE (in kicad viewer, anyways)
+               # without aggregates, this works fine 
+          - reset
+          - slider
+          - aggregate.parts: [matrix_middle_home, matrix_index_home]
+          - aggregate.parts: [matrix_middle_bottom, matrix_index_bottom]
+
 
       encoder:
         what: ceoloide/rotary_encoder_ec11_ec12
