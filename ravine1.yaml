@@ -9,7 +9,7 @@ units:
   capy: u-0.5
   kx: u # spacing
   ky: u
-  xiao_x: 19 # xiao measurements
+  xiao_x: 18 # xiao measurements
   xiao_y: 21
   $default_height: 0
   $default_width: 0
@@ -22,17 +22,23 @@ units:
 
   pinky_splay: 5
   ring_stagger: .7ky
-  ring_splay: 0
+  ring_splay: 3
   middle_stagger: 0.25ky
   middle_splay: 0
-  index_stagger: -0.45ky
+  index_stagger: -0.5ky
   inner_stagger: -0.4ky
-  thumb_base_angle: -16
+  thumb_base_angle: 0 # -16
   thumb_splay: -0
   thumb_adj: 0
-  thumb_stagger: 0.125ky
-  thumb_shiftx: 0.45kx # locational
+  thumb_stagger: -0.25ky # 0.125ky
+  thumb_shiftx: 0.3kx # changes location -- 0.45kx
   thumb_shifty: -1.1ky
+
+  slider_x: 9 # 9.5 smd
+  slider_y: 3.5 # 7.75 smd
+  reset_x: 8
+  reset_y: 5.6
+    
 
 
 points:
@@ -44,6 +50,7 @@ points:
       height: capy
       spread: kx
       padding: ky
+      autobind: 0
     rows:
       bottom.row_net: P6
       home.row_net: P5
@@ -95,46 +102,53 @@ points:
         column_net: P2
   zones.encoder: # thumbs
     anchor:
-      ref: thumb_tucky
-      shift: [-ky, -2thumb_stagger]
+      ref: matrix_middle_bottom
+      shift: [0, -kx]
+      # ref: thumb_tucky
+      # shift: [-ky, -2thumb_stagger]
     key:
       $extends: points.zones.matrix.key
     columns:
       enccol.rows.encrow.column_net: P0
       enccol.rows.encrow.row_net: P7
         
-  zones.reference_top_center:  # mcu ref
-    anchor:
-      ref: matrix_inner_top
-      shift: [mcu_x, mcu_y]
-  zones.mcu:
-    anchor:
-      ref: reference_top_center
+  zones.reference_mcu:  # mcu ref
     key:
       width: xiao_x
       height: xiao_y
+    anchor:
+      ref: matrix_inner_top
+      shift: [-kx/2+xiao_x/2+mcu_x, ky/2+xiao_y/2+mcu_y]
+  zones.mcu:
+    anchor:
+      ref: reference_mcu
+    key:
+      width: xiao_x
+      height: xiao_y
+
   zones.reset: # reset switch
     key:
-      width: 8
-      height: 4.9
+      width: reset_x
+      height: reset_y
     anchor:
       ref: matrix_inner_home
-      shift: [-kx/2+8/2, -ky/2-4.9/2]
+      shift: [-kx/2+reset_x/2, -ky/2-reset_y/2]
   zones.slider: # power switch
     key:
-      width: 9.5
-      height: 7.75
+      width: slider_x
+      height: slider_y
     anchor:
       ref: matrix_inner_home
-      shift: [kx/2-9.5/2, -ky/2 -7.75/2] 
+      shift: [kx/2-slider_y/2, -ky/2-slider_x/2] 
+      rotate: 90
   zones.jst: # battery connector
     anchor:
       ref: matrix_middle_bottom
       shift: [kx/2.5, -ky/1.3]
       rotate: -90
     key:
-      width: 7
-      height: 12.5
+      width: 6.9
+      height: 12.35
       spread: 2
     columns:
       f.key:
@@ -143,14 +157,11 @@ points:
       b.key:
         top_net: GND
         bottom_net: battery
-  zones.test:
-    key: 
-      width: 3.1
-      height: 2.9
+  #zones.bat54c:
+  #  key: 
+  #    width: 3.1
+  #    height: 2.9
     
-
-
-
 
 outlines:
     _key_outline:
@@ -160,34 +171,51 @@ outlines:
         where:
           - /matrix_.*/
           - /thumb_.*/
-      - what: polygon # edge wedges, main shape
+    #_body_poly:
+    #  - what: polygon # edge wedges, main shape
+    #    points:
+    #      - ref: matrix_pinky_home
+    #        shift: [-p, -p]
+    #      - ref: matrix_pinky_top
+    #        shift: [-p, p]
+    #      - ref: matrix_ring_top
+    #        shift: [-p, p]
+    #      - ref: matrix_middle_top
+    #        shift: [-p, p]
+    #      - ref: matrix_middle_top
+    #        shift: [p, p]
+    #      - ref: matrix_index_top
+    #        shift: [p, p]
+    #      - ref: matrix_inner_top
+    #        shift: [p, p]
+    #      - ref: thumb_reachy
+    #        shift: [p, p]
+    #      - ref: thumb_reachy
+    #        shift: [p, -p]
+    #      - ref: thumb_tucky
+    #        shift: [p, -p]
+    #      - ref: thumb_tucky
+    #        shift: [-p, -p]
+    _body_hull:
+      - what: hull
+        concavity: 90
         points:
           - ref: matrix_pinky_home
-            shift: [-p, -p]
           - ref: matrix_pinky_top
-            shift: [-p, p]
           - ref: matrix_ring_top
-            shift: [-p, p]
           - ref: matrix_middle_top
-            shift: [-p, p]
-          - ref: matrix_middle_top
-            shift: [p, p]
           - ref: matrix_index_top
-            shift: [p, p]
+          - ref: encoder_enccol_encrow
           - ref: matrix_inner_top
-            shift: [p, p]
+          - ref: matrix_inner_home
           - ref: thumb_reachy
-            shift: [p, p]
-          - ref: thumb_reachy
-            shift: [p, -p]
           - ref: thumb_tucky
-            shift: [p, -p]
-          - ref: thumb_tucky
-            shift: [-p, -p]
-        fillet: 0
+          - ref: reference_mcu
+          - ref: matrix_ring_bottom
 
     _board:
       - _key_outline
+      - _body_hull
 
     _switches:
       - what: rectangle
@@ -215,15 +243,15 @@ outlines:
     _reset:
       - what: rectangle
         where: reset
-        size: [8, 4.9]
+        size: [8.5, 6]
     _slider:
       - what: rectangle
         where: slider
-        size: [9.5, 7.75]
+        size: [slider_x, slider_y]
     _jst:
       - what: rectangle
         where: /jst_.*/
-        size: [7, 12.5]
+        size: [6.9, 12.35]
 
     debug:
       - _board
@@ -248,25 +276,28 @@ outlines:
 pcbs:
   ravine_v1:
     template: kicad8
-    outlines:
-      main:
-        outline: _board
+    outlines.main.outline: _board
     footprints:
-      switches_main:
-        what: ceoloide/switch_choc_v1_v2
+      switches_main: #########
+        what: placeholder
         where:
           - /matrix_.*/
           - /thumb_.*/ 
+          - /encoder_.*/
         params:
-          from: "{{row_net}}"
-          to: "{{colrow}}"
-          include_plated_holes: true
-          choc_v1_stabilizers_diameter: 1.7
+          P1: "{{row_net}}"
+          P2: "{{colrow}}"
+          P3: GND
+      encoder: #########
+        what: ceoloide/rotary_encoder_ec11_ec12
+        where: /encoder_.*/
+        params:
           reversible: true
-          hotswap_pads_same_side: true
-          include_keycap: true
-
-      diodes:
+          S1: "{{row_net}}"
+          S2: "{{colrow}}"
+          A: P8
+          C: P9
+      diodes: #########
         what: ceoloide/diode_tht_sod123
         where:
           - /matrix_.*/
@@ -278,47 +309,32 @@ pcbs:
           from: "{{colrow}}"
           to: "{{column_net}}"
         adjust:
-          shift: [4.5, -8.5]
-          rotate: 180
-
-      test:
-        what: ceoloide/switch_mx
+          shift: [0, -8]
+      bat54c: #########
+        what: placeholder
         where:
-          - aggregate.parts: [matrix_pinky_top, matrix_pinky_home]
-            shift: [kx/2+5, 0]
-          - aggregate.parts: [matrix_ring_top, matrix_middle_top]
-            shift: [1, -ky/2-2]
-            rotate: 180
+          - matrix_pinky_top
+          - matrix_middle_top
+          - matrix_pinky_home
+          - matrix_middle_home
+          - matrix_ring_bottom
+          - matrix_index_bottom
+          - /encoder_.*/
+          - thumb_tucky
+        adjust:
+          shift: [kx/2, 1.5]
+          rotate: 0
         params:
-          from: ''
-          to: ''
+          designator: BAT54C
+          P1: "{{colrow}}"
+          P2: "{{column_net}}"
+          P3: "{{colrow}}"
 
-      test2:
-        what: ceoloide/power_switch_smd_side
-        where: # when there's an aggregate present in 'where',
-               # it forces there to only be ONE (in kicad viewer, anyways)
-               # without aggregates, this works fine 
-          - reset
-          - slider
-          - aggregate.parts: [matrix_middle_home, matrix_index_home]
-          - aggregate.parts: [matrix_middle_bottom, matrix_index_bottom]
-
-
-      encoder:
-        what: ceoloide/rotary_encoder_ec11_ec12
-        where: /encoder_.*/
-        params:
-          reversible: true
-          S1: "{{column_net}}"
-          S2: "{{row_net}}"
-          A: P8
-          C: P9
-
-      xiao:
+      xiao: #########
         what: xiao
         where: mcu
 
-      reset:
+      reset2: #########
         what: button
         where: reset
         params:
@@ -326,15 +342,7 @@ pcbs:
           from: RST
           to: GND
 
-      reset2:
-        what: infused-kim/switch_reset
-        where: reset
-        params:
-          designator: RESET
-          from: RST
-          to: GND
-
-      slider:
+      slider: #########
         what: placeholder
         where: slider
         params:
@@ -343,15 +351,32 @@ pcbs:
           P2: BAT_POS
           P3: ''
 
-      jst:
-        what: ceoloide/battery_connector_jst_ph_2
-        where: /jst_.*/
-        params:
-          reversible: true
-          BAT_P: "{{top_net}}"
-          BAT_N: "{{bottom_net}}"
+      #jst: # to be moved
+      #  what: ceoloide/battery_connector_jst_ph_2
+      #  where: /jst_.*/
+      #  params:
+      #    reversible: true
+      #    BAT_P: "{{top_net}}"
+      #    BAT_N: "{{bottom_net}}"
+
+
+
+      #switches_main:
+      #  what: ceoloide/switch_choc_v1_v2
+      #  where:
+      #    - /matrix_.*/
+      #    - /thumb_.*/ 
+      #    - /encoder_.*/
+      #  params:
+      #    from: "{{row_net}}"
+      #    to: "{{colrow}}"
+      #    include_plated_holes: true
+      #    include_centerhole_net: true
+      #    choc_v1_stabilizers_diameter: 1.9
+      #    reversible: true
+      #    hotswap_pads_same_side: true
+      #    include_keycap: true
+      
 
   ravine_switchplate:
-    outlines:
-      main:
-        outline: switchplate
+    outlines.main.outline: switchplate
