@@ -29,6 +29,9 @@ fp-info-cache
 *.dsn
 *.ses
 
+# kleplace log
+*.log
+
 # Exported BOM files
 *.xml
 *.csv
