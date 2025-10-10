@@ -20,7 +20,7 @@ units:
   mcu_x: 1 # manual offset
   mcu_y: 1.5
 
-  pinky_splay: 3
+  pinky_splay: 5
   ring_stagger: .7ky
   ring_splay: 3
   middle_stagger: 0.25ky
@@ -60,6 +60,7 @@ points:
         key.column_net: P0
         rows:
           bottom.skip: true
+          home.adjust.rotate: 180
       columns.ring:
         key:
           stagger: ring_stagger
@@ -114,12 +115,6 @@ points:
         enccol.rows.encrow.column_net: P0
         enccol.rows.encrow.row_net: P7
 
-    ref_mcu:  # mcu ref
-      key.width: xiao_x
-      key.height: xiao_y
-      anchor:
-        ref: matrix_inner_top
-        shift: [-kx/2+xiao_x/2+mcu_x, ky/2+xiao_y/2+mcu_y]
     ref_cbl.anchor.aggregate:
       method: intersect
       parts:
@@ -128,14 +123,21 @@ points:
         - ref: thumb_tucky
           shift: -ky/2
           rotate: 90
-    ref_cmcu.anchor.aggregate:
-      method: intersect
-      parts:
-        - ref: thumb_reachy 
-          shift: kx/2
-        - ref: ref_mcu
-          shift: xiao_y/2
-          rotate: 90
+    ref_mcu:  # mcu ref
+      key.width: xiao_x
+      key.height: xiao_y
+      anchor:
+        ref: encoder_enccol_encrow
+        shift: [-kx/2-xiao_y/2, -middle_stagger+ky/2-xiao_x/2-5]
+        rotate: 90
+    #ref_cmcu.anchor.aggregate:
+    #  method: intersect
+    #  parts:
+    #    - ref: thumb_reachy 
+    #      shift: kx/2
+    #    - ref: ref_mcu
+    #      shift: xiao_y/2
+    #      rotate: 90
 
     mcu:
       anchor:
@@ -198,13 +200,12 @@ outlines:
             shift: [-p, -p]
           - ref: ref_mcu
             shift: [-xiao_x/2, xiao_y/2]
-          - ref: ref_cmcu
           - ref: thumb_reachy
             shift: [kx/2, ky/2]
           #- ref: some point top right to complete poly
     _body_hull:
       - what: hull
-        concavity: 30
+        concavity: 0
         points:
           - ref: matrix_pinky_home
           - ref: matrix_pinky_top
@@ -293,9 +294,13 @@ pcbs:
           P3: GND
       encoder: #########
         what: ceoloide/rotary_encoder_ec11_ec12
-        where: /encoder_.*/
+        where: /encoder_/
         params:
           reversible: true
+          include_plated_mounting_holes: false
+          # adjust the two values below
+          mounting_holes_position: 8
+          encoder_pads_position: 8.254
           S1: "{{row_net}}"
           S2: "{{colrow}}"
           A: P8
@@ -309,7 +314,8 @@ pcbs:
           from: "{{colrow}}"
           to: "{{column_net}}"
         adjust:
-          shift: [0, -8]
+          shift: [0, 10]
+          rotate: 180
       
       xiao: #########
         what: xiao
@@ -342,8 +348,8 @@ pcbs:
 
       rgb:
         what: ceoloide/led_sk6812mini-e
-        where: matrix_inner_home
-        adjust.shift: [kx, 0]
+        #where: /blank blank|blank/
+        adjust.shift: [0, 0]
         params:
           reversible: true
           reverse_mount: false
