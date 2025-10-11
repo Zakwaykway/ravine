@@ -5,8 +5,6 @@ meta:
   url: https://github.com/zakwaykway/ravine
   
 units:
-  capx: u-0.5 # kc visual size
-  capy: u-0.5
   kx: u # spacing
   ky: u
   xiao_x: 18 # xiao measurements
@@ -43,10 +41,8 @@ points:
   zones:
     matrix: # mx is top side, 90º turns it c.clockw.
       anchor.shift: [160, -185]
-      rotate: pinky_splay + ring_splay + middle_splay
+      rotate: pinky_splay + ring_splay
       key:
-        width: capx
-        height: capy
         spread: kx
         padding: ky
         autobind: 0
@@ -69,7 +65,7 @@ points:
           stagger: middle_stagger
           splay: -ring_splay
           column_net: P2
-          origin: [-kx/2, -ky/2]
+          origin: [-ky/2, -kx/2]
         rows.bottom.column_net: P1
       columns.index:
         key:
@@ -101,16 +97,16 @@ points:
           stagger: thumb_stagger
           column_net: P2
     encoder: # thumbs
+      key:
+        $extends: points.zones.matrix.key
+        column_net: P0
+        row_net: P7
       anchor:
         ref: matrix_middle_bottom
         shift: [0, -kx]
         # ref: thumb_tucky
         # shift: [-ky, -2thumb_stagger]
-      key:
-        $extends: points.zones.matrix.key
-      columns:
-        enccol.rows.encrow.column_net: P0
-        enccol.rows.encrow.row_net: P7
+      columns.enccol:
 
     ref_cbl.anchor.aggregate:
       method: intersect
@@ -124,7 +120,7 @@ points:
       key.width: xiao_x
       key.height: xiao_y
       anchor:
-        ref: encoder_enccol_encrow
+        ref: encoder_enccol
         shift: [-kx/2-xiao_y/2, -middle_stagger+ky/2-xiao_x/2-3]
         rotate: 90
     #ref_cmcu.anchor.aggregate:
@@ -186,7 +182,7 @@ outlines:
       - what: rectangle
         bound: true
         size: switch
-        where: /matrix_.*|thumb_.*|encoder_.*/
+        where: /matrix|thumb|encoder/
     _body_poly:
       - what: polygon # edge wedges, main shape
         points:
@@ -207,7 +203,7 @@ outlines:
           - ref: matrix_ring_top
           - ref: matrix_middle_top
           - ref: matrix_index_top
-          - ref: encoder_enccol_encrow
+          - ref: encoder_enccol
           - ref: matrix_inner_top
           - ref: matrix_inner_home
           - ref: thumb_reachy
@@ -223,12 +219,12 @@ outlines:
     _switches:
       - what: rectangle
         size: 14
-        where: /matrix_.*|thumb_.*|encoder_.*/
+        where: /matrix|thumb|encoder/
         corner: 0.5
     _keycaps:
       - what: rectangle
-        size: [capx, capy]
-        where: /matrix_.*|thumb_.*/
+        size: [kx, ky]
+        where: /matrix|thumb/
     _mcu:
       - what: rectangle
         where: mcu
@@ -276,19 +272,17 @@ pcbs:
     template: kicad8
     outlines.main.outline: _board
     footprints:
-      switches_main: #########
+      switch: #########
         what: sw_combo
         where:
-          - /matrix_.*/
-          - /thumb_.*/ 
-          - /encoder_.*/
+          - /matrix|thumb|encoder/
         params:
           from: "{{row_net}}"
           to: "{{colrow}}"
           center: GND
       encoder: #########
         what: ceoloide/rotary_encoder_ec11_ec12
-        where: /encoder_/
+        where: /encoder/
         params:
           reversible: true
           include_plated_mounting_holes: false
@@ -299,30 +293,25 @@ pcbs:
           S2: "{{colrow}}"
           A: P8
           C: P9
-      diodes: #########
-        what: ceoloide/diode_tht_sod123
-        where: /matrix_.*|thumb_.*|encoder_.*/
+      diode: #########
+        what: diode_rev
+        where: /matrix|thumb|encoder/
         params:
-          reversible: true
-          include_thru_hole_smd_pads: true
           from: "{{colrow}}"
           to: "{{column_net}}"
         adjust:
-          shift: [0, 10]
+          shift: [0, -8.5]
           rotate: 180
-      
       xiao: #########
         what: xiao
         where: mcu
-
-      reset2: #########
+      reset: #########
         what: button
         where: reset
         params:
           designator: RESET
           from: RST
           to: GND
-
       slider: #########
         what: placeholder
         where: slider
@@ -331,15 +320,13 @@ pcbs:
           P1: battery
           P2: BAT_POS
           P3: ''
-
       jst: #########
         what: ceoloide/battery_connector_jst_ph_2
-        where: /jst_.*/
+        where: /jst/
         params:
           reversible: true
           BAT_P: "{{from_net}}"
           BAT_N: "{{to_net}}"
-
       rgb:
         what: ceoloide/led_sk6812mini-e
         where: /blank blank|blank/
@@ -351,7 +338,6 @@ pcbs:
           P2: P11
           P4: P10
           
-
   ravine_switchplate:
     outlines.main.outline: switchplate
 
