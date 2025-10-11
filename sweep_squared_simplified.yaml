@@ -1,0 +1,226 @@
+units:
+  # Proxy Spacing Variables for easy changing to choc/mx
+  kx: u
+  ky: u
+  # Padding Variables
+  px: kx + 1.2
+  py: ky + 1.2
+  center_x: 118.34
+  center_y: -121
+
+  thumb_size: 1.5 # U
+
+  # ==================== object locations ====================
+  mcu_x: -32.8
+  mcu_y: -32.25
+
+  trrs_x: 48
+  trrs_y: 51.7
+
+  reset_x: -8
+  reset_y: -48
+
+  power_x: -18.15
+  power_y: -48.25
+
+  jst_x: -18
+  jst_y: -42
+
+points:
+  zones:
+    matrix:
+      # Fix placement on KiCAD sheet.
+      anchor.shift: [100, -100]
+      key:
+        padding: 1ky
+        spread: 1kx
+      rotate: -12
+      columns:
+        pinky:
+          rows.bottom:
+            rotate: -90
+          rows.home:
+            rotate: 90
+            shift: [-1kx, -1kx]
+        ring.key:
+          stagger: 0.25kx
+        middle.key.stagger: 0.25kx
+        index.key.stagger: -0.25kx
+        inner:
+          key.stagger: -0.15kx
+          rows.top.rotate: 90
+      rows:
+        bottom.padding: kx
+        home.padding: kx
+        top.padding: kx
+    thumb:
+      anchor:
+        ref: matrix_middle_bottom
+        shift: [0.4kx, -1.35kx]
+      columns:
+        inner:
+          key.name: thumb_inner
+        tucky:
+          key:
+            name: thumb_tucky
+            stagger: -2
+            splay: -14
+            shift: [2, 0]
+        reachy:
+          key.spread: kx
+          key.splay: -14
+          key.stagger: 3
+          key.origin: [-0.5kx, -0.5kx]
+          key.shift: [3, 0]
+          key.rotate: 90
+          key.width: thumb_size * kx
+          key.name: thumb_reachy
+
+outlines:
+  # ==================== keys ====================
+  _thumb:
+    - what: rectangle
+      where: thumb_reachy
+      bound: true
+      size: [thumb_size * kx, ky]
+  _padded_thumb:
+    - what: rectangle
+      where: thumb_reachy
+      bound: true
+      size: [thumb_size * px, py]
+  _keys:
+    - what: rectangle
+      where: true
+      size: [kx, ky]
+  _padded_keys:
+    - what: rectangle
+      where: true
+      size: [px, py]
+  key_outline:
+    - name: _keys
+    - +_thumb
+  _expanded_key_outline:
+    - name: _padded_keys
+    - +_padded_thumb
+  _limits:
+    - what: rectangle
+      size: [100, 100]
+      adjust.shift: [center_x, center_y]
+  combo:
+    - name: _limits
+    - operation: stack
+      name: _keys
+    - operation: stack
+      name: _thumb
+  _pcb_outline:
+    - what: polygon
+      points:
+        - shift: [center_x-50, center_y+50]
+        - shift: [100, 0]
+        - shift: [0, -100]
+        # - shift: [-40, 0]
+        # - shift: [-15, 15]
+        # - shift: [-45, 0]
+        - shift: [-100, 0]
+      fillet: 2
+  pcb_outline_combo:
+    - name: _pcb_outline
+    - operation: stack
+      name: _keys
+    - operation: stack
+      name: _limits
+  # ==================== control_area ====================
+  control_area:
+    - what: polygon
+      points:
+        - shift: [center_x-44, center_y-50.2]
+        - shift: [0, 38.2]
+        - shift: [22.5, 0]
+        - shift: [8, -9]
+        - shift: [0, -10.5]
+        - shift: [10, -2]
+        - shift: [5, -5]
+        - shift: [0, -11.7]
+      fillet: 1
+
+pcbs:
+  board:
+    template: kicad8
+    outlines:
+      edge:
+        outline: _pcb_outline
+        layer: Edge.Cuts
+    footprints:
+      keys:
+        what: ceoloide/switch_mx
+        where: true
+        params:
+          reversible: true
+          from: "{{name}}"
+          to: GND
+      keys2:
+        what: ceoloide/switch_choc_v1_v2
+        where: true
+        adjust.rotate: 180
+        params:
+          reversible: true
+          from: "{{name}}"
+          to: GND
+      mcu:
+        what: promicro
+        where:
+          shift: [center_x + mcu_x, center_y + mcu_y]
+          rotate: 90
+        params:
+          P7: matrix_pinky_top
+          P18: matrix_ring_top
+          P19: matrix_middle_top
+          P20: matrix_index_top
+          P21: matrix_inner_top
+          P15: matrix_pinky_home
+          P14: matrix_ring_home
+          P16: matrix_middle_home
+          P10: matrix_index_home
+          P1: matrix_inner_home
+          P2: matrix_pinky_bottom
+          P3: matrix_ring_bottom
+          P4: matrix_middle_bottom
+          P5: matrix_index_bottom
+          P6: matrix_inner_bottom
+          P8: thumb_tucky
+          P9: thumb_reachy
+          RAW: RAW
+      trrs:
+        what: trrs
+        where:
+          - shift: [center_x + trrs_x, center_y + trrs_y]
+        params:
+          reverse: true
+          symmetric: true
+          A: GND
+          B: GND
+          C: trrs_data
+          D: VCC
+      reset:
+        what: button
+        where:
+          shift: [center_x + reset_x, center_y + reset_y]
+        params:
+          from: GND
+          to: RST
+      reset2:
+        what: button
+        where:
+          shift: [center_x + reset_x, center_y + reset_y]
+        params:
+          side: B
+          from: GND
+          to: RST
+      jst:
+        what: ceoloide/battery_connector_jst_ph_2
+        where:
+          shift: [center_x+jst_x, center_y+jst_y]
+          rotate: 180
+        params:
+          BAT_P: Bplus
+          BAT_N: GND
