@@ -21,15 +21,13 @@ units:
   mcu_y: 1.5
 
   pinky_splay: 5
-  ring_stagger: .7ky
+  ring_stagger: 0.7ky
   ring_splay: 3
   middle_stagger: 0.25ky
-  middle_splay: 0
   index_stagger: -0.5ky
   inner_stagger: -0.4ky
   thumb_base_angle: 0 # -16
   thumb_splay: -0
-  thumb_adj: 0
   thumb_stagger: -0.125ky
   thumb_shiftx: 0.3kx # changes location -- 0.45kx
   thumb_shifty: -1.125ky
@@ -43,7 +41,7 @@ units:
 
 points:
   zones:
-    matrix: 
+    matrix: # mx is top side, 90º turns it c.clockw.
       anchor.shift: [160, -185]
       rotate: pinky_splay + ring_splay + middle_splay
       key:
@@ -58,9 +56,8 @@ points:
         top.row_net: P4
       columns.pinky:
         key.column_net: P0
-        rows:
-          bottom.skip: true
-          home.adjust.rotate: 180
+        rows.bottom.skip: true
+        rows.home.adjust.rotate: 180
       columns.ring:
         key:
           stagger: ring_stagger
@@ -72,12 +69,11 @@ points:
           stagger: middle_stagger
           splay: -ring_splay
           column_net: P2
-          origin: [-U/2, -U/2]
+          origin: [-kx/2, -ky/2]
         rows.bottom.column_net: P1
       columns.index:
         key:
           stagger: index_stagger
-          splay: -middle_splay
           column_net: P3
         rows.bottom.column_net: P2
       columns.inner:
@@ -100,6 +96,7 @@ points:
           splay: thumb_base_angle
           column_net: P1
         reachy.key:
+          rotate: 90
           splay: thumb_splay
           stagger: thumb_stagger
           column_net: P2
@@ -128,7 +125,7 @@ points:
       key.height: xiao_y
       anchor:
         ref: encoder_enccol_encrow
-        shift: [-kx/2-xiao_y/2, -middle_stagger+ky/2-xiao_x/2-5]
+        shift: [-kx/2-xiao_y/2, -middle_stagger+ky/2-xiao_x/2-3]
         rotate: 90
     #ref_cmcu.anchor.aggregate:
     #  method: intersect
@@ -195,14 +192,12 @@ outlines:
         points:
           - ref: thumb_tucky
             shift: [-p, -p]
-          - ref: ref_cbl
           - ref: matrix_pinky_home
             shift: [-p, -p]
           - ref: ref_mcu
             shift: [-xiao_x/2, xiao_y/2]
           - ref: thumb_reachy
             shift: [kx/2, ky/2]
-          #- ref: some point top right to complete poly
     _body_hull:
       - what: hull
         concavity: 0
@@ -222,7 +217,7 @@ outlines:
 
     _board:
       - _key_outline
-      - _body_poly
+      #- _body_poly
       - _body_hull
 
     _switches:
@@ -282,16 +277,15 @@ pcbs:
     outlines.main.outline: _board
     footprints:
       switches_main: #########
-        what: placeholder
+        what: sw_combo
         where:
           - /matrix_.*/
           - /thumb_.*/ 
           - /encoder_.*/
         params:
-          designator: SWITCHES
-          P1: "{{row_net}}"
-          P2: "{{colrow}}"
-          P3: GND
+          from: "{{row_net}}"
+          to: "{{colrow}}"
+          center: GND
       encoder: #########
         what: ceoloide/rotary_encoder_ec11_ec12
         where: /encoder_/
@@ -348,7 +342,7 @@ pcbs:
 
       rgb:
         what: ceoloide/led_sk6812mini-e
-        #where: /blank blank|blank/
+        where: /blank blank|blank/
         adjust.shift: [0, 0]
         params:
           reversible: true
