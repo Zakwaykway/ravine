@@ -1,0 +1,204 @@
+meta:
+  name: ravine_v2
+  engine: 4.1.0
+  main_inspiration: ezxzeng/sweep_squared_rot
+  author: zakwaykway
+units:
+  kx: u # spacing
+  ky: u
+  # Padding Variables
+  px: kx + 1.2
+  py: ky + 1.2
+  center_x: 128
+  center_y: -106.5
+
+  pinky_splay: 5
+  ring_stagger: .7ky
+  ring_splay: 3
+  middle_stagger: 0.25ky
+  index_stagger: -0.5ky
+  inner_stagger: -0.4ky
+  thumb_base_angle: 0 # -16
+  thumb_splay: -0
+  thumb_stagger: -0.125ky
+  thumb_shiftx: 0.3kx # changes location -- 0.45kx
+  thumb_shifty: -1.125ky
+  thumb_size: 1.5 # U
+
+  # ==================== object locations ====================
+  mcu_x: -32.8
+  mcu_y: -32.25
+
+  trrs_x: 48
+  trrs_y: 51.7
+
+  reset_x: -8
+  reset_y: -48
+
+  power_x: -18.15
+  power_y: -48.25
+
+  jst_x: -18
+  jst_y: -42
+
+points:
+  zones:
+    matrix:
+      # Fix placement on KiCAD sheet.
+      anchor.shift: [100, -100]
+      key:
+        autobind: 0
+        padding: ky
+        spread: kx
+      rotate: -12 + (pinky_splay + ring_splay)/2
+      rows:
+        bottom.row_net: P6
+        home.row_net: P5
+        top.row_net: P4
+      columns.pinky:
+        key.column_net: P0
+        rows.bottom.skip: true
+        rows.home.adjust.rotate: -90
+      columns.ring:
+        key:
+          stagger: ring_stagger
+          splay: -pinky_splay
+          column_net: P1
+        rows.bottom.column_net: P0
+      columns.middle:
+        key:
+          stagger: middle_stagger
+          splay: -ring_splay
+          column_net: P2
+          origin: [-kx/2, -ky/2]
+        rows.bottom.column_net: P1
+      columns.index:
+        key:
+          stagger: index_stagger
+          column_net: P3
+        rows.bottom.column_net: P2
+      columns.inner:
+        key:
+          stagger: inner_stagger
+          column_net: P3
+        rows:
+          top.adjust.rotate: 90
+          top.row_net: P6
+          home.row_net: P7
+          bottom.skip: true
+    thumb:
+      key:
+        $extends: points.zones.matrix.key
+        row_net: P7
+      anchor:
+        ref: matrix_middle_bottom
+        shift: [0.4kx, -1.35kx]
+      columns:
+        inner:
+          key.name: thumb_inner
+        tucky.key:
+          column_net: P1
+          stagger: -2
+          splay: -14
+          shift: [2, 0]
+        reachy.key:
+          bind: [(thumb_size*kx-kx)/2, 0]
+          column_net: P2
+          splay: -14
+          stagger: 3
+          origin: [-kx/2, -kx/2]
+          shift: [3, 0]
+          adjust.rotate: 90
+          width: thumb_size * kx
+
+outlines:
+  # ==================== keys ====================
+  _keys:
+    - what: rectangle
+      where: /matrix_|thumb/
+      bound: true
+      size: [kx, ky]
+  _padded_keys_outline:
+    - what: rectangle
+      where: /matrix_|thumb/
+      bound: true
+      size: [px, py]
+  key_outline:
+    - _keys
+  _limits:
+    - what: rectangle
+      size: [100, 100]
+      adjust.shift: [center_x, center_y]
+  # ==================== combos ==================
+  combo:
+    - _limits
+    - ^_keys
+  _pcb_outline:
+    - what: polygon
+      points:
+        - shift: [center_x-50, center_y+50]
+        - shift: [100, 0]
+        - shift: [0, -100]
+        # - shift: [-40, 0]
+        # - shift: [-15, 15]
+        # - shift: [-45, 0]
+        - shift: [-100, 0]
+      fillet: 2
+  pcb_outline_combo:
+    - _pcb_outline
+    - ^_keys
+    - ^_limits
+
+pcbs:
+  ravine_v2:
+    template: kicad8
+    outlines:
+      main:
+        outline: _pcb_outline
+    footprints:
+      keys:
+        what: sw_combo
+        where: true
+        params:
+          from: "{{row_net}}"
+          to: "{{colrow}}"
+          center: GND
+      mcu:
+        what: xiao
+        where:
+          shift: [center_x + mcu_x, center_y + mcu_y]
+          rotate: 90
+      trrs:
+        what: trrs
+        where:
+          - shift: [center_x + trrs_x, center_y + trrs_y]
+        params:
+          reverse: true
+          symmetric: true
+          A: GND
+          B: GND
+          C: NFC1
+          D: VCC
+      reset:
+        what: button
+        where:
+          shift: [center_x + reset_x, center_y + reset_y]
+        params:
+          from: GND
+          to: RST
+      reset2:
+        what: button
+        where:
+          shift: [center_x + reset_x, center_y + reset_y]
+        params:
+          side: B
+          from: GND
+          to: RST
+      jst:
+        what: ceoloide/battery_connector_jst_ph_2
+        where:
+          shift: [center_x+jst_x, center_y+jst_y]
+          rotate: 180
+        params:
+          BAT_P: Bplus
+          BAT_N: GND
