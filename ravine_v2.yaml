@@ -6,6 +6,8 @@ meta:
 units:
   kx: u # spacing
   ky: u
+  px: u-1
+  py: u-1
   xiao_x: 18
   xiao_y: 21
 
@@ -23,8 +25,8 @@ units:
   thumb_size: 1.5 # U
 
   # ==================== object locations ====================
-  center_x: 0
-  center_y: 0
+  center_x: 19
+  center_y: -13
   center_r: -12 + (pinky_splay + ring_splay)/2
 
   mcu_x: -32.8
@@ -42,10 +44,11 @@ units:
   jst_x: -18
   jst_y: -42
 
-points:
+points: 
   zones:
     center:
       anchor.shift: [160, -185]
+      key.adjust.shift: [center_y, center_x]
       key.width: 5
       key.height: 5
     matrix: # mx is top side, 90º turns it c.clockw.
@@ -62,7 +65,7 @@ points:
       columns.pinky:
         key.column_net: P0
         rows.bottom.skip: true
-        rows.home.adjust.rotate: -90
+        rows.home.adjust.rotate: 180
       columns.ring:
         key:
           stagger: ring_stagger
@@ -86,7 +89,6 @@ points:
           stagger: inner_stagger
           column_net: P3
         rows:
-          top.adjust.rotate: 90
           top.row_net: P6
           home.row_net: P7
           bottom.skip: true
@@ -130,8 +132,11 @@ outlines:
       where: /matrix|thumb|encoder/
       bound: true
       size: [kx, ky]
-  key_outline:
-    - _keys
+  _key_display:
+    - what: rectangle
+      where: /matrix|thumb|encoder/
+      bound: true
+      size: [px, py]
   _limits:
     - what: rectangle
       where: center
@@ -139,22 +144,16 @@ outlines:
         shift: [center_x, center_y]
       size: [100, 100]
   # ================= combos ===============
-  combo:
+  test:
     - _limits
     - ^_keys
-  _pcb_outline:
-    - what: polygon
-      points:
-        - shift: [center_x-50, center_y+50]
-        - shift: [100, 0]
-        - shift: [0, -100]
-        # - shift: [-40, 0]
-        # - shift: [-15, 15]
-        # - shift: [-45, 0]
-        - shift: [-100, 0]
+  pcb_outline:
+    - what: rectangle
+      where: center
+      size: [100, 100]
       fillet: 2
   pcb_outline_combo:
-    - _pcb_outline
+    - pcb_outline
     - ^_keys
     - ^_limits
 
@@ -163,7 +162,7 @@ pcbs:
     template: kicad8
     outlines:
       main:
-        outline: _pcb_outline
+        outline: pcb_outline
     footprints:
       switch:
         what: sw_combo
@@ -204,6 +203,10 @@ pcbs:
         params:
           from: GND
           to: RST
+      slider: # add jumpers to the slider
+        what: placeholder
+        where.ref: center
+        adjust.shift: [-10, -10]
       jst:
         what: ceoloide/battery_connector_jst_ph_2
         where:
