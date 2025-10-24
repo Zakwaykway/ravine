@@ -6,10 +6,8 @@ meta:
 units:
   kx: u # spacing
   ky: u
-  px: u-0.25
-  py: u-0.25
-  xiao_x: 18
-  xiao_y: 21
+  px: u-0.75 # keycap size
+  py: u-0.75
 
   pinky_splay: 0
   ring_stagger: .7ky
@@ -17,146 +15,201 @@ units:
   middle_stagger: 0.25ky
   index_stagger: -0.5ky
   inner_stagger: -0.4ky
-  thumb_base_angle: -12
-  thumb_splay: -12
-  thumb_stagger: -0.ky
-  thumb_shiftx: 0.4kx # changes location -- 0.45kx
-  thumb_shifty: -ky -2
-  thumb_size: 1.5 # U
+  thumb_base_angle: 12
+  thumb_splay: 12
+  thumb_stagger: 0.125ky
+  thumb_shiftx: 0.5kx # changes tucky's origin
+  thumb_shifty: -ky/10
+  thumb_size: 1.5 # units of width
+  thumb_rotation: -180
 
-  # ==================== object locations ====================
-  center_x: 0
-  center_y: 0
-  center_r: -16
+  # ==================== object sizes ====================
+  center_x: 2
+  center_y: 4
+  center_r: -13 + pinky_splay/2
 
-  mcu_x: -32.8
-  mcu_y: -32.25
+  xiao_x: 18
+  xiao_y: 21
 
-  trrs_x: 48
-e  trrs_y: 51.7
+  trrs_x: 0
+  trrs_y: 0
 
-  reset_x: -8
-  reset_y: -48
+  reset_x: 8
+  reset_y: 5.6
 
-  power_x: -18.15
-  power_y: -48.25
+  slider_x: 9.5
+  slider_y: 7.75
 
-  jst_x: -18
-  jst_y: -42
+  jst_x: 6
+  jst_y: 12.5 # including male
 
 points.zones:
   matrix: # mx is top side, 90º turns it c.clockw.
-    anchor: # offset center's location
-      shift: [center_x, center_y]
+    anchor: 
+      shift: [150, -150] # MOVE ALL
       rotate: center_r
     key:
       spread: kx
       padding: ky
       autobind: 0
     rows:
-      bottom.row_net: P6
-      home.row_net: P5
-      top.row_net: P4
+      bottom.row_net: row2
+      home.row_net: row1
+      top.row_net: row0
     columns.pinky:
-      key.column_net: P0
+      key.column_net: col0
       rows.bottom.skip: true
       rows.home.adjust.rotate: 180
     columns.ring:
       key:
         stagger: ring_stagger
         splay: -pinky_splay
-        column_net: P1
+        column_net: col1
         origin: [kx/2, -ky/2+ky-ring_stagger] # set origin as tangent pinky_home's corner
       rows.bottom:
-        column_net: P0
+        column_net: col0
     columns.middle:
       key:
         stagger: middle_stagger
         splay: -ring_splay
-        column_net: P2
+        column_net: col2
         origin: [-kx/2, -ky/2]
       rows.bottom.column_net: P1
     columns.index:
       key:
         stagger: index_stagger
-        column_net: P3
-      rows.bottom.column_net: P2
+        column_net: col3
+      rows.bottom.column_net: col2
     columns.inner:
       key:
         stagger: inner_stagger
-        column_net: P3
+        column_net: col3
       rows:
-        top.row_net: P6
-        home.row_net: P7
+        top.row_net: row2
+        home.row_net: row3
         bottom.skip: true
   thumb:
     key:
       $extends: points.zones.matrix.key
-      row_net: P7
+      row_net: row3
+      adjust.rotate: 180
     anchor:
       ref: matrix_index_bottom
-      shift: [thumb_shiftx, thumb_shifty]
+      shift: [thumb_shiftx, -ky+thumb_shifty]
     columns:
       tucky.key:
         origin: [-kx/2, ky/2]
-        column_net: P1
-        splay: thumb_base_angle
+        column_net: col1
+        splay: -thumb_base_angle
       reachy.key:
         bind: [(thumb_size*kx-kx)/2, 0]
-        column_net: P2
-        splay: thumb_splay
+        column_net: col2
+        splay: -thumb_splay
         stagger: thumb_stagger
         origin: [-kx/2, -ky/2]
-        adjust.rotate: -90
+        adjust.rotate: thumb_rotation
         width: thumb_size * kx
   encoder: # thumbs
     key:
       $extends: points.zones.matrix.key
-      column_net: P0
-      row_net: P7
+      column_net: col0
+      row_net: row3
     anchor:
       ref: matrix_middle_bottom
       shift: [0, -ky]
   center:
     anchor:
       aggregate.parts: [matrix_pinky_top, thumb_reachy]
-      orient: center_r+pinky_splay+ring_splay
+      orient: -center_r+(pinky_splay+ring_splay+thumb_base_angle+thumb_splay-thumb_rotation)/2
       shift: [center_x, center_y]
-      affect: [x, y]
+      #affect: [x, y]
     key.width: 100
     key.height: 100
   mcu: # xiao location
     key.width: xiao_x
     key.height: xiao_y
-      
+    anchor:
+      ref: center
+      shift: [-50/2, -50+2]
+    key.adjust:
+      orient: 90
+      shift: [xiao_x/2, xiao_y/2]
+  reset: # reset switch
+      key.width: reset_x
+      key.height: reset_y
+      anchor:
+        ref: center
+        shift: [-50+2, -50+xiao_x+5]
+      key.adjust:
+        orient: 90
+        shift: [reset_x/2, -reset_y/2]
+  slider: # power switch
+    key.width: slider_x
+    key.height: slider_y
+    anchor:
+      ref: center
+      shift: [-50+3, -50+xiao_x+5+slider_x+2] 
+    key.adjust:
+      orient: 90
+      shift:
+  jst: # battery connector
+    anchor:
+      ref: matrix_ring_bottom
+      shift: [kx/2-12.35/2, -ky/2-6.9/2]
+      rotate: -90
+    key:
+      width: 6.9
+      height: 12.35
+      from: battery
+      to: GND
 outlines:
-  # ================= keys =================
+  # ================= core =================
   _keys:
     - what: rectangle
       where: /matrix|thumb|encoder/
       bound: true
       size: [kx, ky]
-  key_display:
+  _keycaps:
     - what: rectangle
-      where: /matrix|thumb|encoder/
+      where: /matrix|thumb/
       bound: true
       size: [px, py]
   _limits:
     - what: rectangle
       where: center
-      bound: true
-      size: 100
+      size: [100, 100]
+  # =============== components =============
+  _mcu:
+    - what: rectangle
+      where: mcu
+      size: [xiao_x, xiao_y]
+  _reset:
+    - what: rectangle
+      where: reset
+      size: [reset_x, reset_y]
+  _slider:
+    - what: rectangle
+      where: slider
+      size: [slider_x, slider_y]
+  _jst:
+    - what: rectangle
+      where: jst
+      size: [jst_x, jst_y]
   # ================= combos ===============
-  test:
-    - _limits
-    - ^_keys
   _pcb_outline:
     - name: _limits
-      fillet: 2
+      fillet: 5
+  pcb_view:
+    - _pcb_outline
+    - ^_mcu
+    - ^_reset
+    - ^_slider
+    - ^_jst
+    - ^_keys
   pcb_outline_combo:
     - _pcb_outline
     - ^_keys
-    - ^_limits
+
 
 pcbs:
   ravine_v2:
@@ -194,22 +247,32 @@ pcbs:
         adjust:
           shift: [0, -8.5]
           rotate: 180
-      mcu:
-        what: xiao2
-        where:
-          shift: [center_x + mcu_x, center_y + mcu_y]
-          rotate: 90
+      #mcu: # commented because it prevents preview
+      #  what: xiao
+      #  where: mcu
+      #  params:
+      #    P0: col0
+      #    P1: col1
+      #    P2: col2
+      #    P3: col3
+      #    P4: led0
+      #    P5: row0
+      #    P6: row1
+      #    P7: row2
+      #    P8: row3
+      #    P9: enc1
+      #    NFC1: enc2
+      #    NFC2: free2
       trrs:
         what: trrs
-        where:
-          - shift: [center_x + trrs_x, center_y + trrs_y]
+        where: trrs
         params:
           reverse: true
           symmetric: true
           A: GND
           B: GND
-          C: NFC1 # IMPORTANT, make sure this is a HIGH FREQUENCY data pin
-          D: VCC
+          C: trrs # IMPORTANT, make sure this is a HIGH FREQUENCY data pin
+          D: RAW5V
       reset:
         what: button
         where:
