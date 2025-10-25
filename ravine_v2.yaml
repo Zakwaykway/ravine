@@ -10,18 +10,14 @@ units:
   py: u-0.75
 
   pinky_splay: 0
-  ring_stagger: .7ky
+  pinky_stagger: 0.65ky # pinky-ring
   ring_splay: 0
-  middle_stagger: 0.25ky
-  index_stagger: -0.5ky
-  inner_stagger: -0.4ky
-  thumb_base_angle: 12
-  thumb_splay: 12
-  thumb_stagger: 0.125ky
-  thumb_shiftx: 0.5kx # changes tucky's origin
-  thumb_shifty: -ky/10
-  thumb_size: 1.5 # units of width
-  thumb_rotation: -180
+  ring_stagger: 0.25ky # ring-middle
+  index_stagger: -0.5ky # middle-index
+  inner_stagger: -0.4ky #index-inner
+  thumb_splay: 24
+  thumb_x: 0.45kx # changes tucky's origin
+  thumb_y: 0
 
   # ==================== object sizes ====================
   center_x: 2
@@ -62,15 +58,15 @@ points.zones:
       rows.home.adjust.rotate: 180
     columns.ring:
       key:
-        stagger: ring_stagger
+        stagger: pinky_stagger
         splay: -pinky_splay
         column_net: col1
-        origin: [kx/2, -ky/2+ky-ring_stagger] # set origin as tangent pinky_home's corner
+        origin: [kx/2, -ky/2+ky+pinky_stagger] # set origin as tangent pinky_home's corner
       rows.bottom:
         column_net: col0
     columns.middle:
       key:
-        stagger: middle_stagger
+        stagger: ring_stagger
         splay: -ring_splay
         column_net: col2
         origin: [-kx/2, -ky/2]
@@ -84,45 +80,28 @@ points.zones:
       key:
         stagger: inner_stagger
         column_net: col3
-      rows:
+        row_net: row3
+      rows: # thumb
         top.row_net: row2
-        home.row_net: row3
-        bottom.skip: true
-  thumb:
-    key:
-      $extends: points.zones.matrix.key
-      row_net: row3
-      adjust.rotate: 180
-    anchor:
-      ref: matrix_index_bottom
-      shift: [thumb_shiftx, -ky+thumb_shifty]
-    columns:
-      tucky.key:
-        origin: [-kx/2, ky/2]
-        column_net: col1
-        splay: -thumb_base_angle
-      reachy.key:
-        bind: [(thumb_size*kx-kx)/2, 0]
-        column_net: col2
-        splay: -thumb_splay
-        stagger: thumb_stagger
-        origin: [-kx/2, -ky/2]
-        adjust.rotate: thumb_rotation
-        width: thumb_size * kx
-  encoder: # thumbs
-    key:
-      $extends: points.zones.matrix.key
-      column_net: col0
-      row_net: row3
+        bottom: 
+          name: thumb
+          adjust:
+            - shift: [thumb_x, -ky+thumb_y]
+            - orient: -thumb_splay
+              shift: [0, 0]
+          column.net: col2
+  encoder:
+    key.column_net: col0
+    key.row_net: row3
     anchor:
       ref: matrix_middle_bottom
       shift: [0, -ky]
   center:
     anchor:
-      aggregate.parts: [matrix_pinky_top, thumb_reachy]
-      orient: -center_r+(pinky_splay+ring_splay+thumb_base_angle+thumb_splay-thumb_rotation)/2
-      shift: [center_x, center_y]
-      #affect: [x, y]
+      - ref: matrix_middle_top
+        shift: [0, -2.5ky]
+      - orient: -center_r
+        shift: [center_x, center_y]
     key.width: 100
     key.height: 100
   mcu: # xiao location
@@ -240,7 +219,7 @@ pcbs:
       #    C: P9
       diode: #########
         what: diode_rev
-        where: /matrix_|thumb_|encoder_/
+        where: /matrix|thumb|encoder/
         params:
           from: "{{colrow}}"
           to: "{{column_net}}"
@@ -275,20 +254,20 @@ pcbs:
           D: RAW5V
       reset:
         what: button
-        where:
-          shift: [center_x + reset_x, center_y + reset_y]
+        where: reset
         params:
           from: GND
           to: RST
       slider: # add jumpers to the slider
         what: placeholder
-        where.ref: matrix_middle_bottom
-        adjust.shift: [-10, -10]
+        where: slider
+        params:
+          P1: battery
+          P2: BAT_POS
+          P3: unconnected
       jst:
         what: ceoloide/battery_connector_jst_ph_2
-        where:
-          shift: [center_x+jst_x, center_y+jst_y]
-          rotate: 180
+        where: jst
         params:
-          BAT_P: Bplus
+          BAT_P: battery
           BAT_N: GND
