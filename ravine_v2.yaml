@@ -9,33 +9,36 @@ units:
   px: u-0.75 # keycap size
   py: u-0.75
 
+# switches' nets & diodes' direction can be flipped to
+# facilitate routing to either the left or right
+# sides of the board
+
   pinky_splay: 0
   pinky_stagger: 0.65ky # pinky-ring
   ring_splay: 0
   ring_stagger: 0.25ky # ring-middle
   index_stagger: -0.5ky # middle-index
   inner_stagger: -0.4ky #index-inner
-  thumb_splay: 24
+  thumb_splay: 15
   thumb_x: 0.45kx # changes tucky's origin
-  thumb_y: 0
+  thumb_y: 1
 
+  corner_x: 2
+  corner_y: 1
+
+  center_x: 4
+  center_y: 4.25
+  center_r: -14 + pinky_splay/2
+  
   # ==================== object sizes ====================
-  center_x: 2
-  center_y: 4
-  center_r: -13 + pinky_splay/2
-
   xiao_x: 18
   xiao_y: 21
-
   trrs_x: 0
   trrs_y: 0
-
   reset_x: 8
   reset_y: 5.6
-
   slider_x: 9.5
   slider_y: 7.75
-
   jst_x: 6
   jst_y: 12.5 # including male
 
@@ -62,8 +65,7 @@ points.zones:
         splay: -pinky_splay
         column_net: col1
         origin: [kx/2, -ky/2+ky+pinky_stagger] # set origin as tangent pinky_home's corner
-      rows.bottom:
-        column_net: col0
+      rows.bottom.column_net: col0
     columns.middle:
       key:
         stagger: ring_stagger
@@ -84,18 +86,19 @@ points.zones:
       rows: # thumb
         top.row_net: row2
         bottom: 
-          name: thumb
+          name: matrix_thumb
           adjust:
             - shift: [thumb_x, -ky+thumb_y]
             - orient: -thumb_splay
-              shift: [0, 0]
           column.net: col2
+  test_key:
+    key.ref:
+      aggregate.points:
   encoder:
     key.column_net: col0
     key.row_net: row3
-    anchor:
-      ref: matrix_middle_bottom
-      shift: [0, -ky]
+    anchor.ref: matrix_middle_bottom
+    anchor.shift: [0, -ky]
   center:
     anchor:
       - ref: matrix_middle_top
@@ -104,12 +107,17 @@ points.zones:
         shift: [center_x, center_y]
     key.width: 100
     key.height: 100
+  corner:
+    key.column_net: col0
+    key.row_net: row3
+    key.name: matrix_corner
+    anchor.ref: center
+    anchor.shift: [-50+kx/2+corner_x, -50+ky/2+corner_y]
   mcu: # xiao location
     key.width: xiao_x
     key.height: xiao_y
-    anchor:
-      ref: center
-      shift: [-50/2, -50+2]
+    anchor.ref: center
+    anchor.shift: [-50/2, -50+2]
     key.adjust:
       orient: 90
       shift: [xiao_x/2, xiao_y/2]
@@ -131,26 +139,29 @@ points.zones:
     key.adjust:
       orient: 90
       shift:
+  trrs: # trrs cable
+
+    
   jst: # battery connector
     anchor:
-      ref: matrix_ring_bottom
-      shift: [kx/2-12.35/2, -ky/2-6.9/2]
-      rotate: -90
+      ref: center
+      shift: [0, -50]
     key:
-      width: 6.9
-      height: 12.35
-      from: battery
-      to: GND
+      adjust: 
+        orient: -90
+        shift: [-jst_x/2, 0]
+      width: jst_x
+      height: jst_y
 outlines:
   # ================= core =================
   _keys:
     - what: rectangle
-      where: /matrix|thumb|encoder/
+      where: /matrix|encoder/
       bound: true
       size: [kx, ky]
   _keycaps:
     - what: rectangle
-      where: /matrix|thumb/
+      where: /matrix/
       bound: true
       size: [px, py]
   _limits:
