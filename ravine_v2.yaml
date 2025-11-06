@@ -33,6 +33,8 @@ units:
   # ==================== object sizes ====================
   xiao_x: 18
   xiao_y: 21
+  trrs_x: 0
+  trrs_y: 0
   reset_x: 8
   reset_y: 5.6
   slider_x: 9.5
@@ -134,7 +136,16 @@ points.zones:
     key.adjust:
       orient: 90
       shift:
-    
+  trrs: # trrs connector
+    key.width: trrs_x
+    key.height: trrs_y
+    anchor:
+      ref: center
+      shift: [50, 50]
+    key.adjust: 
+      orient: 0
+      shift: [-trrs_x/2, -trrs_y/2]
+
   jst: # battery connector
     anchor:
       ref: center
@@ -246,6 +257,16 @@ pcbs:
       #    P9: enc1
       #    NFC1: enc2
       #    NFC2: free2
+      trrs:
+        what: trrs
+        where: trrs
+        params:
+          reverse: true
+          symmetric: true
+          A: GND
+          B: GND
+          C: trrs # IMPORTANT, make sure this is a HIGH FREQUENCY data pin
+          D: RAW5V
       reset:
         what: button
         where: reset
