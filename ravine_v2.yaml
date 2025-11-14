@@ -1,37 +1,38 @@
 meta:
-  name: ravine_v2
+  name: ravine
   engine: 4.1.0
-  main_inspiration: ezxzeng/sweep_squared_rot
+  derived_from: ezxzeng/sweep_squared_rot
   author: zakwaykway
 units:
   kx: u # spacing
   ky: u
-  px: u-0.75 # keycap size
-  py: u-0.75
+  px: 18.5 # keycap size
+  py: 18.5
+  sw: 16
 
-# switches' nets & diodes' direction can be flipped to
-# facilitate routing to either the left or right
-# sides of the board
+# switches' nets & diodes' direction can be flipped to facilitate routing
 
-  pinky_splay: 0
+  pinky_splay: 5
   pinky_stagger: 0.6ky # pinky-ring
   ring_splay: 0
   ring_stagger: 0.25ky # ring-middle
   index_stagger: -0.5ky # middle-index
   inner_stagger: -0.4ky #index-inner
-  thumb_splay: 15
-  thumb_x: 0.45kx # changes tucky's origin
-  thumb_y: 1
+  thumb_splay: 16
+  thumb_x: 0*0.05kx # changes thumb's origin
+  thumb_y: 0
 
   corner_x: 1
   corner_y: 1
 
-  center_x: 4
-  center_y: 4.25
-  center_r: -14 + pinky_splay/2
+  center_x: 6
+  center_y: 3.5
+  center_r: -14 + pinky_splay/2 + ring_splay
   
   # ==================== object sizes ====================
-  xiao_x: 18
+  gap: 2 # gaps between each component
+  square: 102
+  xiao_x: 17.8
   xiao_y: 21
   trrs_x: 0
   trrs_y: 0
@@ -46,11 +47,13 @@ points.zones:
   matrix: # mx is top side, 90º turns it c.clockw.
     anchor: 
       shift: [150, -150] # MOVE ALL
-      rotate: center_r
+      rotate: center_r+pinky_splay+ring_splay
     key:
       spread: kx
       padding: ky
       autobind: 0
+      tags: keys
+      bind: [px/2,py/2]
     rows:
       bottom.row_net: row2
       home.row_net: row1
@@ -64,7 +67,7 @@ points.zones:
         stagger: pinky_stagger
         splay: -pinky_splay
         column_net: col1
-        origin: [kx/2, -ky/2+ky+pinky_stagger] # set origin as tangent pinky_home's corner
+        origin: [kx/2, -ky/2+pinky_stagger] # set origin as tangent pinky_home's corner
       rows.bottom.column_net: col0
     columns.middle:
       key:
@@ -83,47 +86,55 @@ points.zones:
         stagger: inner_stagger
         column_net: col3
         row_net: row3
-      rows: # thumb
+      rows:
         top.row_net: row2
-        bottom: 
-          name: matrix_thumb
-          adjust:
-            - shift: [thumb_x, -ky+thumb_y]
-            - orient: -thumb_splay
-          column.net: col2
-  encoder:
-    key.column_net: col0
-    key.row_net: row3
-    anchor.ref: matrix_middle_bottom
-    anchor.shift: [0, -ky]
+        bottom.skip: true
   center:
     anchor:
       - ref: matrix_middle_top
         shift: [0, -2.5ky]
       - orient: -center_r
         shift: [center_x, center_y]
-    key.width: 100
-    key.height: 100
+    key.width: square  # size of board outline
+    key.height: square # 102mm^2 for jlc special price
+  encoder:
+    key.column_net: col0
+    key.row_net: row3
+    anchor.ref: matrix_middle_bottom
+    anchor.shift: [0, -ky]
+  thumb:
+    key.row_net: row3
+    key.column_net: col2
+    key.name: matrix_thumb
+    anchor.ref: center
+    anchor.shift: [square/2-kx/2+thumb_x, -square/2+ky/2]
   corner:
     key.column_net: col0
     key.row_net: row3
     key.name: matrix_corner
     anchor.ref: center
-    anchor.shift: [-50+kx/2+corner_x, -50+ky/2+corner_y]
-  mcu: # xiao location
+    anchor.shift: [-square/2+kx/2+corner_x, -square/2+ky/2+corner_y]
+  xiao: # xiao location
     key.width: xiao_x
     key.height: xiao_y
     anchor.ref: center
-    anchor.shift: [-50/2, -50+2]
+    anchor.shift: [-square/2, -square/2]
     key.adjust:
       orient: 90
-      shift: [xiao_x/2, xiao_y/2]
+      shift: [xiao_x/2, -xiao_y/2]
+  xiao2:
+    key.width: xiao_x
+    key.height: xiao_y
+    anchor.ref: center
+    anchor.shift: [square/2, square/2]
+    key.adjust:
+      shift: [-xiao_x/2, -xiao_y/2]
   reset: # reset switch
       key.width: reset_x
       key.height: reset_y
       anchor:
         ref: center
-        shift: [-50+2, -50+xiao_x+5]
+        shift: [-square/2+2, -square/2+xiao_x+5]
       key.adjust:
         orient: 90
         shift: [reset_x/2, -reset_y/2]
@@ -132,24 +143,14 @@ points.zones:
     key.height: slider_y
     anchor:
       ref: center
-      shift: [-50+3, -50+xiao_x+5+slider_x+2] 
+      shift: [-square/2, -square/2+xiao_x+5] 
     key.adjust:
       orient: 90
       shift:
-  trrs: # trrs connector
-    key.width: trrs_x
-    key.height: trrs_y
-    anchor:
-      ref: center
-      shift: [50, 50]
-    key.adjust: 
-      orient: 0
-      shift: [-trrs_x/2, -trrs_y/2]
-
   jst: # battery connector
     anchor:
       ref: center
-      shift: [0, -50]
+      shift: [0, -square/2]
     key:
       adjust: 
         orient: -90
@@ -161,22 +162,55 @@ outlines:
   _keys:
     - what: rectangle
       where: /matrix|encoder/
-      bound: true
       size: [kx, ky]
   _keycaps:
     - what: rectangle
       where: /matrix/
-      bound: true
+      # bound: true
       size: [px, py]
+    - what: circle
+      where: encoder
+      radius: 14.4/2
+      operation: stack
+  _key_cutouts:
+    - what: rectangle
+      where: /matrix|encoder/
+      size: 16
   _limits:
     - what: rectangle
       where: center
-      size: [100, 100]
+      size: [square, square]
+  top_arc:
+    - what: path
+      segments: 
+        - type: line
+          points:
+            - ref: center
+              shift: [square/2, square/2]
+            - ref: center
+              shift: [square/2, -square/2]
+            - ref: center
+              shift: [-square/2, -square/2]
+            - ref: matrix_pinky_top
+              shift: [-kx/2, 0]
+              affect: y
+        - type: arc
+          points:
+            - ref: matrix_middle_top
+              shift: [0, ky/2]
+            - ref: matrix_inner_top
+              shift: [kx/2, ky]
+        
   # =============== components =============
-  _mcu:
+  _xiao:
     - what: rectangle
-      where: mcu
+      where: xiao
       size: [xiao_x, xiao_y]
+      corner: 1.5
+  _xiao_extra:
+    - what: outline
+      name: _xiao
+      expand: 1
   _reset:
     - what: rectangle
       where: reset
@@ -189,32 +223,28 @@ outlines:
     - what: rectangle
       where: jst
       size: [jst_x, jst_y]
-  # ================= combos ===============
-  _pcb_outline:
-    - name: _limits
-      fillet: 5
-  pcb_view:
-    - _pcb_outline
-    - ^_mcu
-    - ^_reset
-    - ^_slider
-    - ^_jst
-    - ^_keys
-  pcb_outline_combo:
-    - _pcb_outline
-    - ^_keys
-
-
+  # ================= outlines ===============
+  test:
+    - _keycaps
+    - ^top_arc
+    - ^_limits
+    - ^_xiao_extra
+  keys:
+    - what: rectangle
+      where: /matrix/
+      bound: true
+  pcb:
+    - top_arc
 pcbs:
-  ravine_v2:
+  ravine:
     template: kicad8
     outlines:
       main:
-        outline: _pcb_outline
+        outline: pcb
     footprints:
       switch:
         what: sw_combo
-        where: /matrix|thumb/
+        where: /matrix|encoder/
         params:
           from: "{{row_net}}"
           to: "{{colrow}}"
@@ -233,13 +263,17 @@ pcbs:
       #    A: P8
       #    C: P9
       diode: #########
-        what: diode_rev
-        where: /matrix|thumb|encoder/
+        #what: diode_rev
+        what: ceoloide/diode_tht_sod123
+        where: 
+          - ref: matrix_pinky_home
+            rotate: 180
+          # - /matrix_(?!pinky_home)|encoder/
         params:
           from: "{{colrow}}"
           to: "{{column_net}}"
         adjust:
-          shift: [0, -8.5]
+          shift: [0, -9.5]
           rotate: 180
       #mcu: # commented because it prevents preview
       #  what: xiao
@@ -249,24 +283,14 @@ pcbs:
       #    P1: col1
       #    P2: col2
       #    P3: col3
-      #    P4: led0
-      #    P5: row0
+      #    P4: HFREQ
+      #    P5: HFREQ
       #    P6: row1
       #    P7: row2
       #    P8: row3
-      #    P9: enc1
-      #    NFC1: enc2
-      #    NFC2: free2
-      trrs:
-        what: trrs
-        where: trrs
-        params:
-          reverse: true
-          symmetric: true
-          A: GND
-          B: GND
-          C: trrs # IMPORTANT, make sure this is a HIGH FREQUENCY data pin
-          D: RAW5V
+      #    P9: enc
+      #    NFC1: enc1
+      #    NFC2: enc2
       reset:
         what: button
         where: reset
@@ -286,3 +310,9 @@ pcbs:
         params:
           BAT_P: battery
           BAT_N: GND
+      coin_cell:
+        what: cr2032
+        where: cr2032
+        params:
+          GND: GND
+          BAT_P: battery
