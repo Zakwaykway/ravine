@@ -313,7 +313,7 @@ pcbs:
           S2: "{{row_net}}"
           A: enc1
           C: enc2
-      diode: #########
+      diode: &diode
         what: diode_rev
         where: /matrix_(?!pinky_home|thumb|corner)/ 
         params:
@@ -322,36 +322,43 @@ pcbs:
         adjust:
           shift: [0, -9.5]
           rotate: 180
-      diode_adj:
-        what: diode_rev
+      diode_a1:
+        <<: *diode
         where: 
-          - ref: matrix_pinky_home
-            shift: [0, 8]
+          - matrix_pinky_home
+          - matrix_corner
+        adjust.shift: [0, 8]
+      diode_a2:
+        <<: *diode
+        where: 
           - ref: matrix_thumb
             shift: [0, -9.5]
             rotate: 180
+      diode_a3:
+        <<: *diode
+        where: 
           - ref: matrix_corner
             shift: [0, 8]
             rotate: 180
+      diode_a4:
+        <<: *diode
+        where: 
           - ref: encoder
             shift: [0, -10]
             rotate: 180
-        params:
-          from: "{{col_net}}"
-          to: "{{colrow}}"
       xiao: # commented because it prevents preview
-        #what: placeholder
-        what: xiao
+        what: placeholder
+        #what: xiao
         where: xiao
         params:
           P4: HFREQ
           P5: HFREQ
-          P6: P4
-          P7: interrupt
-          P8: blank # right side
-          P9: blank
-          NFC1: blank
-          NFC2: blank
+          #P6: P4
+          #P7: interrupt
+          #P8: blank # right side
+          #P9: blank
+          #NFC1: blank
+          #NFC2: blank
       reset:
         what: button
         where: reset
