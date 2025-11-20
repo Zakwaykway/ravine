@@ -1,6 +1,6 @@
 meta:
   name: ravine
-  engine: 4.1.0
+  engine: 4.2.1
   derived_from: ezxzeng/sweep_squared_rot
   author: zakwaykway
 units:
@@ -13,7 +13,7 @@ units:
   # Remove extraneous naming. create points for every diode?
 
   pinky_splay: 5
-  pinky_stagger: 0.575ky # pinky to ring
+  pinky_stagger: 0.55ky # pinky to ring
   ring_splay: 3
   ring_stagger: 0.25ky # ring to middle
   index_stagger: -0.5ky # middle to index
@@ -34,15 +34,15 @@ units:
   square: 102
   xiao_x: 17.8
   xiao_y: 21
-  trrs_x: 0
-  trrs_y: 0
-  reset_x: 8
+  trrs_x: 6.1
+  trrs_y: 13.2
+  reset_x: 8 # alps skqg
   reset_y: 5.6
-  slider_x: 9.5
+  slider_x: 9.5 # MSS22D18 SMT
   slider_y: 7.75
   jst_x: 6
   jst_y: 12.5 # including male
-  coin_x: 25.7
+  coin_x: 25.7 # bs-8 
   coin_y: 15.7
 
 points.zones:
@@ -55,6 +55,8 @@ points.zones:
       padding: ky
       autobind: 0
       tags: keys
+      width: px
+      height: py
     rows:
       bottom.row_net: P2
       home.row_net: P1
@@ -107,66 +109,60 @@ points.zones:
     anchor.ref: center
     anchor.shift: [square/2-kx/2+thumb_x, -square/2+ky/2]
   corner: # potentially invert nets for pretty diode
-    key.column_net: P3 
+    key.col_net: P3 
     key.row_net: P4
     key.name: matrix_corner
     anchor.ref: center
     anchor.shift: [-square/2+kx/2+corner_x, -square/2+ky/2+corner_y]
   xiao: # xiao
+    key.width: xiao_x
+    key.height: xiao_y
     anchor.ref: [matrix_index_top, center]
-    #anchor.shift: [kx/2, ky/2]
     anchor.shift: [square/2-xiao_x/2, square/2-xiao_y/2]
-    key:
-      width: xiao_x
-      height: xiao_y
-    #  orient: -0.3center_r
-    #  shift: [xiao_x/2, inner_stagger+xiao_y/2]
-  reset: # reset switch
-      key.width: reset_x
-      key.height: reset_y
-      anchor: 
-        - ref: matrix_ring_bottom
-          shift: [0, -ky +2]
-
-
   slider: # power switch
     key.width: slider_x
     key.height: slider_y
     anchor:
-      ref: center
-      shift: [-square/2, -0square/2-5] 
-    key.adjust:
-      orient: 90
-      shift:
+      - ref: matrix_corner
+        shift: [kx/2 + slider_x/2 + 2gap, 0]
+      - ref: center
+        shift: [0, -square/2 + slider_y/2 + 0.5gap]
+        affect: y
+  reset: # reset switch
+    key.width: reset_x
+    key.height: reset_y
+    anchor:
+      - ref: slider
+        shift: [slider_x/2 + 2gap + reset_x/2, 0]
+      - ref: center
+        shift: [0, -square/2 + reset_y/2 + 2gap]
+        affect: y
   trrs:
     key.width: trrs_x
     key.height: trrs_y
     anchor:
       ref: matrix_inner_home
-      shift: [kx/2+gap+trrs_x/2, 0]
+      shift: [kx/2+gap+trrs_x/2, -ky/2+trrs_y/2+gap]
   jst: # battery connector
+    key.width: jst_x
+    key.height: jst_y
     anchor:
-      ref: center
-      shift: [0, -square/2]
-    key:
-      adjust: 
-        orient: -90
+      - ref: center
+        shift: [0, -square/2]
+      - orient: -90
         shift: [-jst_x/2, 0]
-      width: jst_x
-      height: jst_y
   cr2032:
+    key.width: coin_x
+    key.height: coin_y
     anchor:
       - ref: center
         shift: [square/2-coin_x/2, 0]
-        affect: x
       - ref: 
         - ref: matrix_inner_home
           shift: [kx/2, -ky/2-1.5]
-          affect: [y]
+          affect: y
         shift: [0, -coin_y/2]
-        affect: y
-    key.width: coin_x
-    key.height: coin_y
+        affect: y 
 
 outlines:
   # ================= core =================
@@ -222,26 +218,63 @@ outlines:
       where: trrs
       size: [trrs_x, trrs_y]
   # ================= outlines ===============
-  _pcb_out:
+  _pcb_out: #test lowkey
     - what: path
       segments: 
-        - type: arc
+        - type: bezier
           points:
             - ref: matrix_pinky_top
               shift: [-kx/2-0.25, 0.3ky]
             - ref: matrix_ring_top
-              shift: [0, ky/2]
+              shift: [-0.4kx, 0.6ky]
             - ref: 
               - ref: matrix_middle_top
-                shift: [0, ky/2]
+                shift: [0, 1.001ky/2]
+              - ref: center
+                shift: [0, square/2]
+                affect: y
+            - ref: xiao
+              shift: [-xiao_x/2, xiao_y/2-2+gap]
+        - type: line
+          points:
+            - ref: xiao
+              shift: [xiao_x/2, xiao_y/2-2]    
+            - ref: center
+              shift: [square/2, -square/2]
+            - ref: center
+              shift: [-square/2, -square/2]
+        - type: bezier
+          points:
+            - ref:
+              - ref: center
+                shift: [-square/2, 0]
+              - ref: matrix_corner
+                shift: [0, ky]
+                affect: y
+            - ref: matrix_pinky_home
+              orient: matrix_pinky_top
+              shift: [-kx/2-0.25, 0.15ky]
+              
+  _testline: #works
+    - what: path
+      segments: 
+        - type: bezier
+          points:
+            - ref: matrix_pinky_top
+              shift: [-kx/2-0.25, 0.3ky]
+            - ref: matrix_ring_top
+              shift: [-0.4kx, 0.6ky]
+            - ref: 
+              - ref: matrix_middle_top
+                shift: [0, 1ky/2]
                 affect: x
               - ref: center
                 shift: [0, square/2]
                 affect: y
-        - type: line
-          points:
             - ref: xiao
               shift: [-xiao_x/2, xiao_y/2-2+gap]
+        - type: line
+          points:
             - ref: xiao
               shift: [xiao_x/2, xiao_y/2-2]    
             - ref: center
@@ -256,9 +289,14 @@ outlines:
               - ref: center
                 shift: [-square/2, 0]
                 affect: x
+            
+  test2:
+    - _pcb_out
+    - ^_testline
   test:
     - _keycaps
     - ^_pcb_out
+    - ^_testline
     - ^_limits
     - ^_xiao
   keys:
@@ -266,21 +304,21 @@ outlines:
       where: /matrix/
   pcb_o:
     - name: _pcb_out 
-      fillet: 5
+      fillet: 3
   _plate_out:
     - name: _pcb_out
       where.shift: [-1, 1]
     - name: _xiao # needs a smaller fillet, 1-2, to trigger immediately
       operation: subtract
-      fillet: 5
+      fillet: 0
     - name: _cr2032
       operation: subtract
-      fillet: 3
+      fillet: 0
     - name: _slider
       operation: subtract
     - name: _reset # small — candidate for small fillet
       operation: subtract
-      fillet: 2
+      fillet: 0
     - name: _jst
       operation: subtract
   plate_o:
@@ -317,8 +355,8 @@ pcbs:
         what: diode_rev
         where: /matrix_(?!pinky_home|thumb|corner)/ 
         params:
-          from: "{{col_net}}" # > diode
-          to: "{{colrow}}" # > mcu
+          from: "{{colrow}}" # > diode
+          to: "{{col_net}}" # > mcu
         adjust:
           shift: [0, -9.5]
           rotate: 180
@@ -346,25 +384,34 @@ pcbs:
           - ref: encoder
             shift: [0, -10]
             rotate: 180
+      rgb:
+        what: ceoloide/led_sk6812mini-e
+        where: /led/
+        params:
+          P2: "{{led_out}}"
+          P4:  "{{led_in}}"
       xiao: # commented because it prevents preview
         what: placeholder
         #what: xiao
         where: xiao
         params:
-          P4: HFREQ
-          P5: HFREQ
+          P4: trrs
+          P5: trrs
           #P6: P4
           #P7: interrupt
           #P8: blank # right side
           #P9: blank
           #NFC1: blank
           #NFC2: blank
-      reset:
+      reset: &reset
         what: button
         where: reset
         params:
           from: GND
           to: RST
+      reset_tht:
+        <<: *reset
+        what: tht_button
       slider: # add jumpers to the slider
         what: placeholder
         where: slider
@@ -373,26 +420,27 @@ pcbs:
           P2: BAT_POS
           P3: unconnected
       trrs:
-        what: trrs
+        what: ceoloide/trrs_pj320a
         where: trrs
         params:
-          reverse: true
-          A: VCC
-          B: HFREQ
-          C: GND
-          D: GND
+          reversible: true
+          symmetric: true
+          TP: VCC
+          R2: trrs
+          SL: GND
       jst:
         what: ceoloide/battery_connector_jst_ph_2
         where: jst
         params:
+          reversible: true
           BAT_P: battery
           BAT_N: GND
-      coin_cell:
-        what: cr2032
-        where: cr2032
-        params:
-          BAT_P: battery
-          GND: GND
+      #coin_cell:
+      #  what: cr2032
+      #  where: cr2032
+      #  params:
+      #    BAT_P: battery
+      #    GND: GND
   ravine_plate:
     template: kicad8
     outlines.main.outline: plate_o
