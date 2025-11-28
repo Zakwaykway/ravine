@@ -12,8 +12,7 @@ units:
   $default_width: 18 # can't be px, 
   $default_height: 18 # as it throws an error?? 
   $default_autobind: 0
-  # todo reading: filters. Add a tag to all keys, encoder included.
-  # Remove extraneous naming. create points for every diode?
+  # todo diodes, pcb outline, components
 
   pinky_splay: 5
   pinky_stagger: 0.55ky # pinky to ring
@@ -21,18 +20,20 @@ units:
   ring_stagger: 0.25ky # ring to middle
   index_stagger: -0.45ky # middle to index
   inner_stagger: -0.4ky #index to inner
+  
   thumb_splay: 18
-  thumb_x: 0.25 # changes thumb's origin
-  thumb_y: 0
+  thumb_x: -0.5 # changes thumb's origin
+  thumb_y: 1
 
-  corner_x: 0.5
-  corner_y: 0
+  corner_x: -1.5
+  corner_y: 0.5
 
-  center_x: 6
+  center_x: 6.5
   center_y: 4.5
   center_r: -14 - pinky_splay/3 - ring_splay/3
   
   gap: 0.1 # gaps from edges
+  gap2: 0.5 # aesthetic gaps
   # ==================== object sizes ====================
   square: 102
   xiao_x: 17.8
@@ -48,8 +49,15 @@ units:
   coin_x: 25.7 # bs-8 
   coin_y: 15.7
 
+  m_x: 8.635+gap
+  m_xy: 6.33+gap
+  m_y: 6.73+gap
+  c_x: 9.57+gap
+  c_xy: 5.05+gap
+  c_y: 7.6+gap
+
 points.zones:
-  zero.rows: # [0, 0, 0]
+  zero.rows: # [0, 0, 0 for polygon outline]
   matrix: # mx is top side, 90º turns it c.clockw.
     anchor: 
       shift: [150, -150] # move all
@@ -57,7 +65,7 @@ points.zones:
     key:
       spread: kx
       padding: ky
-      tags: keys
+      tags: switches
     rows:
       bottom.row_net: P2
       home.row_net: P1
@@ -88,7 +96,8 @@ points.zones:
     columns.inner:
       key.col_net: P4
       key.stagger: inner_stagger
-      rows.bottom.skip: true
+      rows.bottom.tags: [switches, encoder]
+      # encoder needs proper nets
   center:
     anchor:
       - ref: matrix_middle_top
@@ -96,33 +105,45 @@ points.zones:
       - orient: -center_r
         shift: [center_x, center_y]
     key.width: square  # size of board outline
-    key.height: square # 102mm^2 for jlc special price
-  encoder: # potentially invert nets for pretty diode
+    key.height: square
+    key.bind: square/2 # 102mm^2 for jlc special price
+  encoder: &matrix # potentially invert nets for pretty diode
     key.row_net: P3
     key.col_net: P2
+    key.name: matrix_{{zone.name}}
+    key.tags: [encoder, switches]
     anchor.ref: matrix_middle_bottom
     anchor.shift: [0, -ky]
   thumb: # potentially invert nets for pretty diode
-    key.row_net: P3
+    <<: *matrix
     key.col_net: P0
-    key.name: matrix_thumb
     key.rotate: center_r - thumb_splay -90
+    key.tags: [switches]
     anchor.ref: center
-    anchor.shift: [square/2-kx/2+thumb_x, -square/2+ky/2]
+    anchor.shift: [square/2-kx/2+thumb_x, -square/2+ky/2+thumb_y]
   corner: # potentially invert nets for pretty diode
-    key.col_net: P3 
+    <<: *matrix 
     key.row_net: P4
-    key.name: matrix_corner
+    key.col_net: P3
+    key.tags: [switches]
+    key.rotate: 90
     anchor.ref: center
     anchor.shift: [-square/2+kx/2+corner_x, -square/2+ky/2+corner_y]
   xiao: # xiao
     key.width: xiao_x
     key.height: xiao_y
-    anchor.ref: [matrix_index_top, center]
-    anchor.shift: [square/2-xiao_x/2, square/2-xiao_y/2]
+    anchor:
+      - ref: matrix_ring_bottom
+        shift: [kx/2-3, -ky/2-3]
+    key.adjust:
+      orient: 90
+      shift: [-xiao_x/2, xiao_y/2]
+    #anchor.ref: center
+    #anchor.shift: [square/2-xiao_x/2, square/2-xiao_y/2]
   slider: # power switch
     key.width: slider_x
     key.height: slider_y
+    key.bind: [slider_x/2, slider_y/2]
     anchor:
       - ref: matrix_corner
         shift: [kx/2 + slider_x/2 + 8, 0]
@@ -132,6 +153,7 @@ points.zones:
   reset: # reset switch
     key.width: reset_x
     key.height: reset_y
+    key.bind: [reset_x/2, reset_y/2]
     anchor:
       - ref: slider
         shift: [slider_x/2 + 2 + reset_x/2, 0]
@@ -141,6 +163,7 @@ points.zones:
   trrs:
     key.width: trrs_x
     key.height: trrs_y
+    key.bind: [trrs_x/2, trrs_y/2]
     key.origin: [trrs_x/2, trrs_y/2]
     key.splay: center_r
     anchor:
@@ -152,6 +175,7 @@ points.zones:
   jst: # battery connector
     key.width: jst_x
     key.height: jst_y
+    key.bind: [jst_x/2, jst_y/2]
     anchor:
       - ref: center
         shift: [0, -square/2]
@@ -160,6 +184,7 @@ points.zones:
   cr2032:
     key.width: coin_x
     key.height: coin_y
+    key.bind: [coin_x/2, coin_y/2]
     anchor:
       - ref: center
         shift: [square/2-coin_x/2, 0]
@@ -201,53 +226,52 @@ outlines:
     - what: rectangle
       where: trrs
       size: [trrs_x, trrs_y]
-      
+  _components:
+    - what: rectangle
+      where: true
+      bound: true
   # ================= core =================
   _key_footprint:
     - what: polygon
       where: /matrix/
       points:
         - ref: zero
-          shift: [2.54+gap, 6.73+gap] # m ring
+          shift: [2.54+gap, m_y] # m ring
         - ref: zero
-          shift: [7.365+gap, 6.33+gap] # m t pad t
+          shift: [7.365+gap, m_xy] # m t pad t
         - ref: zero
-          shift: [8.635+gap, 3.79+gap] # m b pad t 
+          shift: [m_x, 3.79+gap] # m b pad t 
         - ref: zero
-          shift: [8.635+gap, 1.29+gap] # m b pad b
+          shift: [m_x, 1.29+gap] # m b pad b
         - ref: zero
-          shift: [9.57+gap, -2.45-gap] # c t pad t
+          shift: [c_x, -2.45-gap] # c t pad t
         - ref: zero
-          shift: [9.57+gap, -5.05-gap] # c t pad b
+          shift: [c_x, -c_xy] # c t pad b
         - ref: zero
           shift: [4.57+gap, -7.25-gap] # c b pad b
         - ref: zero
-          shift: [0, -7.6-gap] # c ring
+          shift: [0, -c_y] # c ring
         - ref: zero
           shift: [-4.57-gap, -7.25-gap] # c b pad b
         - ref: zero
-          shift: [-9.57-gap, -5.05-gap] # c t pad b
+          shift: [-c_x, -c_xy] # c t pad b
         - ref: zero
-          shift: [-9.57-gap, -2.45-gap] # c t pad t
+          shift: [-c_x, -2.45-gap] # c t pad t
         - ref: zero
-          shift: [-8.635-gap, 1.29+gap] # m b pad b
+          shift: [-m_x, 1.29+gap] # m b pad b
         - ref: zero
-          shift: [-8.635-gap, 3.79+gap] # m b pad t 
+          shift: [-m_x, 3.79+gap] # m b pad t 
         - ref: zero
-          shift: [-7.365-gap, 6.33+gap] # m t pad t
+          shift: [-7.365-gap, m_xy] # m t pad t
         - ref: zero
-          shift: [-2.54-gap, 6.73+gap] # m ring
-    #- what: rectangle
-    #  use rectangles instead of polygons?
-
-
+          shift: [-2.54-gap, m_y] # m ring
   _keys:
     - what: rectangle
       where: /matrix|encoder/
       size: [px, py]
   _keycaps:
     - what: rectangle
-      where: /matrix/
+      where: /matrix|encoder/
       size: [px, py]
     - what: circle
       where: encoder
@@ -261,7 +285,14 @@ outlines:
     - what: rectangle
       where: center
       size: [square, square]
-  _pcb_out: #test lowkey
+  _xiao_head:
+    - what: rectangle
+      corner: 3
+      size: [xiao_x+2*2.5, 15]
+      where: 
+        - ref: xiao
+          shift: [0, xiao_y/2+sy/2]
+  _pcb_out1:
     - what: path
       segments: 
         - type: line # [edge, -edge] to  [-edge, corner]
@@ -270,75 +301,71 @@ outlines:
               shift: [square/2, -square/2]
             - ref: center           # bot left
               shift: [-square/2, -square/2]
-            - ref:       #[-edge, corn_key top left]
+            - ref: matrix_corner           # corner top
+              shift: [kx/2, 0]
+              affect: y
+        #- type: s_curve
+        #  points:
+        #    - ref: xiao
+        #      shift: [-xiao_x/2, xiao_y/2]    
+        #- type: line
+        #  points:
+        #    - ref: xiao
+        #      shift: [xiao_x/2, xiao_y/2]
+        #- type: s_curve
+        #  points:
+            - ref:
               - ref: center
                 shift: [-square/2, 0]
-              - ref: matrix_corner
-                shift: [0, ky]
+              - ref: matrix_pinky_home
+                orient: matrix_pinky_top # top left of pinky_home
+                shift: [-c_x, -ky/2]
                 affect: y
-        - type: bezier # [-edge, corner] to pinky_top
-          points:
-            - ref: matrix_pinky_home    # pinky_home bot left
-              orient: matrix_pinky_top  # home is rotated. reset º
-              shift: [-kx/2-0.25, 0.15ky]
-            - ref: matrix_pinky_top # pinky top corner
-              shift: [-kx/2-0.25, 0.3ky]
-        - type: bezier # pinky_top to [-xiao, xiao]
-          points:
-            - ref: matrix_ring_top # ring top
-              shift: [-0.4kx, 0.6ky]
-            - ref:                 # [middle, square]
-              - ref: matrix_middle_top
-                shift: [0, 1.001ky/2]
-              - ref: center
-                shift: [0, square/2]
-                affect: y
-            - ref: xiao            # xiao top left
-              shift: [-xiao_x/2, xiao_y/2-1.5]
-        - type: line # [-xiao, xiao] to bottom edge
-          points:
-            - ref: xiao             # xiao top right
-              shift: [xiao_x/2, xiao_y/2-2]               
-  _testline: #works
-    - what: path
-      segments: 
-        - type: bezier
+        - type: line
+          points:    
+            - ref: matrix_pinky_home
+              orient: matrix_pinky_top # top left of pinky_home
+              shift: [-c_x, ky/2]
+              affect: y
+        - type: bezier      # board's "corner"
           points:
             - ref: matrix_pinky_top
-              shift: [-kx/2-0.25, 0.3ky]
-            - ref: matrix_ring_top
-              shift: [-0.4kx, 0.6ky]
-            - ref: 
-              - ref: matrix_middle_top
-                shift: [0, ky/2]
-                affect: x
-              - ref: center
-                shift: [0, square/2]
-                affect: y
-            - ref: xiao
-              shift: [-xiao_x/2, xiao_y/2-1.5]
-        - type: line
+              shift: [-kx/2-4.5, ky/2-4.5]
+            - ref: matrix_pinky_top
+              shift: [-m_x+3.5, m_y+2]
+        - type: arc         # pinky to mid
           points:
-            - ref: xiao
-              shift: [xiao_x/2, xiao_y/2-2]    
-            - ref: center
-              shift: [square/2, -square/2]
-            - ref: center
-              shift: [-square/2, -square/2]
-            - ref: 
-              - ref: matrix_pinky_home
-                orient: matrix_pinky_top
-                shift: [-kx/2-0.25, 0.15ky]
-                affect: y
-              - ref: center
-                shift: [-square/2, 0]
-                affect: x
-
+            - ref:
+              - ref: matrix_ring_top
+                affect: [x, y]
+              shift: [-m_x-3, m_xy-0.5]
+            - ref: matrix_middle_top
+              shift: [-6, m_y+0.75]
+        - type: arc         # mid to inner
+          points:
+            - ref.aggregate.parts: [matrix_middle_top, matrix_inner_top]
+              shift: [0, ky/2+5]
+            - ref: matrix_inner_top
+              shift: [kx/2, ky/2 -3]
+  template:
+    - what: rectangle
+      where: [switches]
+      size: 16
+    - what: circle
+      operation: stack
+      where: [encoder]
+      radius: 9
+  _pcb_out:
+    - _pcb_out1
+    - ~_limits
   # ================= outlines ===============            
   test_outline:
-    - _pcb_out
+    - _pcb_out1
     - ^_key_footprint
     - ^_limits
+    - ^_xiao
+    - ^_components
+    - ^_xiao_head
   preview:
     - _keycaps
     - ^_pcb_out
@@ -375,14 +402,14 @@ pcbs:
     footprints:
       switches:
         what: sw_combo
-        where: /none/ #/matrix|encoder/
+        where: [[switches, -encoder]]
         params:
-          to: "{{row_net}}" # > switch
-          from: "{{colrow}}" # > diode
+          from: "{{row_net}}" # > switch
+          to: "{{colrow}}" # > diode
           center: GND
       encoder: 
         what: ceoloide/rotary_encoder_ec11_ec12
-        where: /encoder/
+        where: [encoder]
         params:
           reversible: true
           include_plated_mounting_holes: false
@@ -392,39 +419,32 @@ pcbs:
           S2: "{{row_net}}"
           A: enc1
           C: enc2
-      diode: &diode
+      diode: &diode #adjust diode rotations correctly
         what: diode_rev
-        where: /matrix_(?!pinky_home|thumb|corner)/ 
+        where: [[/matrix_(?!pinky|ring|thumb|corner)/, -encoder]]
         params:
           from: "{{colrow}}" # > diode
           to: "{{col_net}}" # > mcu
         adjust:
-          shift: [0, -9.5]
-          rotate: 180
-      diode_a1:
+          shift: [-5, -8.35]
+      diode1:
         <<: *diode
-        where: 
-          - matrix_pinky_home
-          - matrix_corner
-        adjust.shift: [0, 8]
-      diode_a2:
+        where: /matrix_(?=pinky_top|corner|ring|thumb)/ # [d_c_r]
+        adjust.shift: [5, -8.35]
+        adjust.rotate: 180
+      diode2:
         <<: *diode
-        where: 
-          - ref: matrix_thumb
-            shift: [0, -9.5]
-            rotate: 180
-      diode_a3:
+        where: /matrix_pinky_home/ # [d_m_l] pinky_home
+        adjust.shift: [-4.5, 8.35]
+      diode3:
         <<: *diode
-        where: 
-          - ref: matrix_corner
-            shift: [0, 8]
-            rotate: 180
-      diode_a4:
-        <<: *diode
-        where: 
-          - ref: encoder
-            shift: [0, -10]
-            rotate: 180
+        where: [encoder] # encoders
+        adjust.rotate: 180
+        adjust.shift: [0, -10]
+      #diode4:
+      #  <<: *diode
+      #  where: encoder
+      #  adjust.shift: [0, -10]
       rgb:
         what: ceoloide/led_sk6812mini-e
         where: /led/
