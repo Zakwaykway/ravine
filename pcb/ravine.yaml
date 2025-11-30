@@ -12,7 +12,13 @@ units:
   $default_width: 18 # can't be px, 
   $default_height: 18 # as it throws an error?? 
   $default_autobind: 0
-  # todo diodes, pcb outline, components
+  #=== TODO ===# 
+  # move components
+  #   top right, vert power switch!!!
+  # pcb outline left edge
+  # aesthetic cutout under palm?
+  # thumb plate clipping (just tuck it)
+  # 
 
   pinky_splay: 5
   pinky_stagger: 0.55ky # pinky to ring
@@ -421,7 +427,7 @@ pcbs:
           C: enc2
       diode: &diode #adjust diode rotations correctly
         what: diode_rev
-        where: [[/matrix_(?!pinky|ring|thumb|corner)/, -encoder]]
+        where: [[/matrix_(?!pinky|ring|corner)/, -encoder]]
         params:
           from: "{{colrow}}" # > diode
           to: "{{col_net}}" # > mcu
@@ -429,7 +435,7 @@ pcbs:
           shift: [-5, -8.35]
       diode1:
         <<: *diode
-        where: /matrix_(?=pinky_top|corner|ring|thumb)/ # [d_c_r]
+        where: /matrix_(?=pinky_top|corner|ring)/ # [d_c_r]
         adjust.shift: [5, -8.35]
         adjust.rotate: 180
       diode2:
@@ -439,12 +445,7 @@ pcbs:
       diode3:
         <<: *diode
         where: [encoder] # encoders
-        adjust.rotate: 180
         adjust.shift: [0, -10]
-      #diode4:
-      #  <<: *diode
-      #  where: encoder
-      #  adjust.shift: [0, -10]
       rgb:
         what: ceoloide/led_sk6812mini-e
         where: /led/
