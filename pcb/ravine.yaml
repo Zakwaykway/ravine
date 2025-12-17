@@ -9,29 +9,27 @@ units:
   px: 18 # keycap size
   py: px
 
-  $default_width: 18.5 # can't be px, 
-  $default_height: 18.5 # as it throws an error?? 
+  $default_width: 18 # can't be px, 
+  $default_height: 18 # as it throws an error?? 
   $default_autobind: 0
   #=== TODO ===# 
-  # move components
   # aesthetic cutout under palm?
-  # thumb plate clipping (just tuck it)
 
   pinky_splay: 5
   pinky_stagger: 0.5ky # pinky to ring
   ring_splay: 3
   ring_stagger: 0.25ky # ring to middle
   index_stagger: -0.4ky # middle to index
-  inner_stagger: -0.45ky #index to inner
+  inner_stagger: -0.35ky #index to inner
 
-  center_x: 7.5   # center
-  center_y: 6.5
+  center_x: 5   # center
+  center_y: 8.5
   center_r: -16 - pinky_splay/3 - ring_splay/3 # objective rotation of middle
 
   thumb_r: 20   # thumb
   thumb_x: -1.5
   thumb_y: 3
-  corner_r: 12.5  # corner
+  corner_r: 10  # corner
   corner_x: -1
   corner_y: 1.5
   
@@ -47,10 +45,11 @@ units:
   reset_y: 5.3
   slider_x: 8 # something sk c02
   slider_y: 3.01
-  slider_y2: 4.01
-  jst_x: 6
-  jst_y: 12.5 # including male
-  coin_x: 25.7 # bs-8 
+  slider_x2: 9.5 # MSS22D18 SMT
+  slider_y2: 7.75
+  jst_x: 6.9
+  jst_y: 12.35 # including male
+  coin_x: 25.9 # bs-cr2032-8 
   coin_y: 15.7
 
   m_x: 8.635+gap
@@ -92,7 +91,7 @@ points.zones:
       key:
         stagger: ring_stagger
         splay: -ring_splay
-        origin: [-kx/2, -ky/2]
+        origin: [-kx/2, -ky/2-ring_stagger]
     columns.index:
       key.col_net: P3
       key.stagger: index_stagger
@@ -100,13 +99,14 @@ points.zones:
     columns.inner:
       key.col_net: P4
       key.stagger: inner_stagger
-      rows.bottom.tags: [switches, encoder]
+      rows.bottom.tags: [encoder]
+      rows.bottom.skip: true
   center:
     anchor:
-      - ref: matrix_middle_top
-        shift: [0, -2.5ky]
-      - orient: -center_r
-        shift: [center_x, center_y]
+      - ref: matrix_middle_bottom
+        shift: [0, -0.5ky]
+      - shift: [center_x, center_y]
+        rotate: -center_r
     key.width: square  # size of board outline
     key.height: square
   encoder: &matrix # potentially invert nets for pretty diode
@@ -122,13 +122,14 @@ points.zones:
     key.spread: -kx
     key.name: matrix_{{zone.name}}_{{col.name}}
     key.col_net: P0
-    key.rotate: center_r -thumb_r -90
     key.tags: [switches]
     anchor.ref: center
     anchor.shift: [square/2-kx/2+thumb_x, -square/2+ky/2+thumb_y]
     columns:
-      main:
-      enc:
+      thumb.key:
+        splay: center_r -thumb_r
+        adjust.rotate: -90
+    #  enc.key.tags: [encoder]
   corner: # potentially invert nets for pretty diode
     <<: *matrix 
     key.row_net: P4
@@ -145,7 +146,7 @@ points.zones:
         method: intersect
         parts:
           - ref: matrix_ring_bottom
-            shift: [0, -ky/2-3-xiao_x]
+            shift: [0, -ky/2 - xiao_x - 2]
             rotate: 90
           - ref: center
             shift: [-square/2, 0]
@@ -156,17 +157,15 @@ points.zones:
   trrs:
     key.width: trrs_x
     key.height: trrs_y 
-    key.bind: [trrs_x/2, trrs_y/2]
     key.splay: center_r
     anchor:
-      - ref: 
-          aggregate:
-            method: intersect
-            parts:
-              - ref: matrix_inner_top
-                shift: [14/2+trrs_x+2, 0]
-              - ref: center
-                shift: [square/2, 0] 
+      aggregate:
+        method: intersect
+        parts:
+          - ref: matrix_inner_top
+            shift: [14/2+trrs_x+2, 0]
+          - ref: center
+            shift: [square/2, 0] 
     key.adjust:
       shift: [-trrs_x/2+0.5, -trrs_y/2]
   slider: # power switch
@@ -175,54 +174,60 @@ points.zones:
     key.bind: [slider_x/2, slider_y/2]
     anchor:
       - ref: matrix_inner_top
-        shift: [-kx/2+slider_x/2+2, ky/2+slider_y2/2]
+        shift: [-kx/2+slider_x/2+2, ky/2+(slider_y+1)/2]
         rotate: -27
-      - shift: [-1.5, 3]
+      - shift: [-1.5, 2.8]
     key.adjust.shift: [0, -slider_y/2]
   reset: # reset switch
     key.width: reset_x
     key.height: reset_y
-    key.bind: [reset_x/2, reset_y/2]
     key.splay: center_r
     anchor:
-      - ref: 
-          aggregate:
-            method: intersect
-            parts:
-              - ref: trrs
-                shift: [0, -trrs_y/2-1.5]
-                rotate: 90
-              - ref: center
-                shift: [square/2, 0] 
+      aggregate:
+        method: intersect
+        parts:
+          - ref: trrs
+            shift: [0, -trrs_y/2-1.5]
+            rotate: 90
+          - ref: center
+            shift: [square/2, 0] 
     key.adjust:
       shift: [-reset_x/2-1, -reset_y/2]
+  cr2032:
+    key.width: coin_x
+    key.height: coin_y
+    anchor:
+      - ref: center
+        shift: [0, -square/2]
+      - ref: matrix_corner
+        affect: x
+      - shift: [kx/2 + coin_x/2 + 6, coin_y/2 + 2.5]
+  slider2: # battery swapping switch
+    key.width: slider_x2
+    key.height: slider_y2
+    key.bind: [slider_x2/2, slider_y2/2]
+    anchor:
+    #  - ref: cr2032
+    #    shift: [coin_x/2+1.8 + slider_x2/2 + 4, 0]
+      - ref: center
+        shift: [0, -square/2 + slider_y2/2 + 1.5]
+      - ref: cr2032
+        shift: [coin_x/2+1.8 + slider_x2/2 + 2, 0]
+        affect: x
   jst: # battery connector
     key.width: jst_x
     key.height: jst_y
-    key.bind: [jst_x/2, jst_y/2]
     anchor:
-      - ref: 
-        - ref: matrix_corner
-          affect: x
-        - ref: center
-          shift: [0, -square/2]
-          affect: y
-        shift: [kx/2, 0]
-      - orient: 180
-        shift: [-jst_x/2-2, -jst_y/2]
-  #cr2032:
-  #  key.width: coin_x
-  #  key.height: coin_y
-  #  key.bind: [coin_x/2, coin_y/2]
-  #  anchor:
-  #    - ref: center
-  #      shift: [0, -square/2+coin_y/2+1.5]
-  #    - ref: 
-  #      - ref: matrix_thumb
-  #        shift: [kx/2, -ky/2]
-  #        affect: [x, y]
-  #      shift: [-coin_x/2, -ky/2-1.5]
-  #      affect: x 
+      - ref: slider2
+        shift: [-slider_x2/2, slider_y2/2 + 2]
+        rotate: 90
+      - shift: [jst_x/2, -jst_y/2]
+    #  - ref: center
+    #    shift: [0, -square/2]
+    #  - ref: slider2
+    #    affect: x
+    #  - shift: [slider_x2/2 + jst_x/2 + 2.5, jst_y/2 + 2.5]
+    #    rotate: 180
 
 outlines:
   # =============== components =============
@@ -247,41 +252,85 @@ outlines:
     - what: rectangle
       where: slider
       adjust.shift: [0, -0.5]
-      size: [slider_x, slider_y2]
+      size: [slider_x, slider_y+1]
+  _slider2:
+    - what: rectangle
+      where: slider2
+      size: [slider_x2, slider_y2]
   _jst:
     - what: rectangle
       where: jst
       size: [jst_x, jst_y]
-  #_cr2032:
-  #  - what: rectangle
-  #    where: cr2032
-  #    size: [coin_x, coin_y]
-  #  - what: circle
-  #    where: 
-  #      - ref: cr2032
-  #        shift: [-0.7, 0]
-  #    expand: 1
-  #    radius: 10
+  _cr2032:
+    - what: path
+      segments:
+        - type: arc
+          points: 
+            - ref: cr2032
+              shift: [-7.9183, -coin_y/2]
+            - ref: cr2032
+              shift: [-11.15, 0]
+            - ref: cr2032
+              shift: [-7.9183, coin_y/2]
+        - type: line
+          points:
+            - ref: cr2032
+              shift: [7.9183, coin_y/2]
+        - type: arc
+          points: 
+            - ref: cr2032
+              shift: [11.15, 0]
+            - ref: cr2032
+              shift: [7.9183, -coin_y/2]
+    - what: rectangle
+      where: cr2032
+      size: [12.95, 13]
+      adjust.shift: [sx/2, 0]
+    - what: circle
+      where: cr2032
+      radius: 10
+  _cr2032_head: # additional head space for coin, slider2, jst
+    - name: _cr2032
+    - what: rectangle
+      where: cr2032
+      size: [22.3, coin_y]
+      adjust.shift: [0, -coin_y/2]
+      expand: 1>
+    - what: path
+      segments:
+        - type: line 
+          points: 
+            - ref: 
+              - ref: cr2032
+              - ref: jst
+                affect: y
+              - shift: [0, jst_y/2] # + 1] # expand this later, sparing the +1
+            - shift: [0, -jst_y-10]
+            - ref:
+              - ref: jst
+                affect: x
+              shift: [jst_x/2, 0]
+            - shift: [0, jst_y+10]
+      expand: 1
   _trrs:
     - what: rectangle
       where: trrs
       size: [trrs_x, trrs_y]
-  _trrs_head:
+  _trrs_head: # additional head space for trrs, reset
     - what: rectangle
       where: trrs
       size: [trrs_x, 20]
       adjust.shift: [0, trrs_y/2+sy/2-1]
     - what: polygon
       points: 
-        - ref: 
-            aggregate:
-              method: intersect
-              parts:
-                - ref: trrs
-                  shift: [-trrs_x/2, 0]
-                - ref: reset
-                  shift: [0, -reset_y/2]
-                  rotate: 90
+        - aggregate:
+            method: intersect
+            parts:
+              - ref: trrs
+                shift: [-trrs_x/2, 0]
+              - ref: reset
+                shift: [0, -reset_y/2]
+                rotate: 90
           rotate: center_r
         - shift: [0, 20]
         - shift: [15, 0]
@@ -326,13 +375,9 @@ outlines:
           shift: [-7.365-gap, m_xy] # m t pad t
         - ref: zero
           shift: [-2.54-gap, m_y] # m ring
-  _keys:
-    - what: rectangle
-      where: /matrix|encoder/
-      size: [px, py]
   _keycaps:
     - what: rectangle
-      where: /matrix|encoder/
+      where: [switches]
       size: [px, py]
     - what: circle
       where: encoder
@@ -361,37 +406,19 @@ outlines:
             - ref: matrix_corner           # corner's top
               shift: [kx/2, 0]
               affect: y
-            - ref:
-                aggregate:
-                  method: intersect
-                  parts:
-                    - ref: center
-                      shift: [-square/2, 0]
-                    - ref: matrix_pinky_top
-                      shift: [-c_x, 0]
+            - aggregate:
+                method: intersect
+                parts:
+                  - ref: center
+                    shift: [-square/2, 0]
+                  - ref: matrix_pinky_top
+                    shift: [-c_x, 0]
             - ref: matrix_pinky_top
-              shift: [-c_x, m_xy-0.4]
-        #      - ref: matrix_pinky_home
-        #        orient: matrix_pinky_top # bottom left of pinky_home
-        #        shift: [-c_x, -ky/2]
-        #        affect: y
-        #- type: line
-        #  points:    
-        #    - ref: matrix_pinky_home
-        #      orient: matrix_pinky_top # top left of pinky_home
-        #      shift: [-c_x, ky/2]
-        #      affect: y
-        #- type: bezier      # board's "corner"
-        #  points:
-        #    - ref: matrix_pinky_top
-        #      shift: [-kx/2-4.5, ky/2-4.5]
-        #    - ref: matrix_pinky_top
-        #      shift: [-m_x+3.5, m_y+2]
+              shift: [-c_x, m_xy-0]
         - type: arc         # pinky to mid
           points:
-            - ref:
-              - ref: matrix_middle_top
-                shift: [0, 7+1.75]
+            - ref: matrix_middle_top
+              shift: [0, 7+1.75]
             - ref:
               - ref: center
                 shift: [square/2, 0]
@@ -411,10 +438,12 @@ outlines:
     - ^_limits
     - ^_key_footprint
     - ^_xiao
-    - ^_components
-    #- ^_cr2032
-    - ^_slider
     - ^_trrs
+    - ^_reset
+    - ^_cr2032
+    - ^_slider
+    - ^_slider2
+    - ^_jst
   pcb_o:
     - name: _pcb_out
       fillet: 1.5 
@@ -427,9 +456,15 @@ outlines:
     - name: _xiao # needs a smaller fillet, 1-2, to trigger immediately
       operation: subtract
       fillet: 0
-    #- name: _cr2032
-    #  operation: subtract
-    #  fillet: 0
+    - name: _cr2032
+      operation: subtract
+      fillet: 0
+    - name: _slider2
+      operation: subtract
+      fillet: 0
+    - name: _cr2032_head
+      operation: subtract
+      fillet: 0
     - name: _reset # small — candidate for small fillet
       operation: subtract
       fillet: 0
@@ -486,23 +521,19 @@ pcbs:
         <<: *diode
         where: [encoder] # encoders
         adjust.shift: [0, -10]
-      #rgb:
-      #  what: ceoloide/led_sk6812mini-e
-      #  where: /led/
-      #  params:
-      #    P2: "{{led_out}}"
-      #    P4: "{{led_in}}"
-      xiao: # commented because it prevents preview
+      xiao:
         what: placeholder
-        #what: xiao
+        #what: xiao # commented because it prevents preview
         where: xiao
         params:
-          P4: trrs
+          #P0-4 are P0-4
+          #P4 & P5 are high-frequency
           P5: trrs
-          #P6: P4
-          #P7: interrupt
-          #P8: blank # right side
+          #P6: interrupt
+          #P7: enc1 # right side
+          #P8: enc2
           #P9: blank
+          #P10: blank
           #NFC1: blank
           #NFC2: blank
       reset: &reset
@@ -511,10 +542,10 @@ pcbs:
         params:
           from: GND
           to: RST
-      reset2:
+      reset2: # optional tht or smd button
         <<: *reset
         what: button
-      slider: # add jumpers to the slider
+      slider:
         what: ceoloide/power_switch_smd_side
         where: slider
         adjust.rotate: 90
@@ -522,7 +553,13 @@ pcbs:
           from: battery
           to: BAT_POS
           reversible: true
-          include_courtyard: true
+      slider2:
+        what: mss_rev
+        where: slider2
+        params:
+          L: coin_bat
+          M: battery
+          R: jst_bat 
       trrs:
         what: ceoloide/trrs_pj320a
         where: trrs
@@ -536,10 +573,17 @@ pcbs:
       jst:
         what: ceoloide/battery_connector_jst_ph_2
         where: jst
+        adjust.shift: [0, 4.35]
         params:
           reversible: true
-          BAT_P: battery
+          BAT_P: jst_bat
           BAT_N: GND
-      #coin_cell:
-      #  what: cr2032
-      #  where: cr2032
+      coin_cell: # bs-8 component
+        what: cr2032
+        where: cr2032
+        params:
+          BAT_P: coin_bat
+          GND: GND
+  ravine_plate:
+    template: kicad8
+    outlines.main.outline: plate_o
