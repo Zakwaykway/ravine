@@ -30,8 +30,8 @@ units:
   thumb_x: -1.5
   thumb_y: 3
   corner_r: 10  # corner
-  corner_x: -1
-  corner_y: 1.5
+  corner_x: 0.5
+  corner_y: 0
   
   gap: 0.2 # gaps from edges
   gap2: 0.5 # aesthetic gaps
@@ -134,7 +134,7 @@ points.zones:
     <<: *matrix 
     key.row_net: P4
     key.col_net: P3
-    key.rotate: 90-corner_r
+    key.rotate: 180-corner_r
     key.tags: [switches]
     anchor.ref: center
     anchor.shift: [-square/2+kx/2+corner_x, -square/2+ky/2+corner_y]
@@ -201,49 +201,41 @@ points.zones:
         shift: [0, -square/2]
       - ref: matrix_corner
         affect: x
-      - shift: [kx/2 + coin_x/2 + 6, coin_y/2 + 2.5]
+      - shift: [kx/2 + coin_x/2 + 9, coin_y/2 + 2.5]
+  jst: # battery connector
+    key.width: jst_x
+    key.height: jst_y
+    anchor:
+      - ref: center
+        shift: [0, -square/2 + jst_x/2 + 1.5]
+      - ref: cr2032
+        shift: [coin_x/2 + jst_y/2 + 4, 0]
+        affect: x
+      - rotate: 90
   slider2: # battery swapping switch
     key.width: slider_x2
     key.height: slider_y2
     key.bind: [slider_x2/2, slider_y2/2]
     anchor:
-    #  - ref: cr2032
-    #    shift: [coin_x/2+1.8 + slider_x2/2 + 4, 0]
-      - ref: center
-        shift: [0, -square/2 + slider_y2/2 + 1.5]
-      - ref: cr2032
-        shift: [coin_x/2+1.8 + slider_x2/2 + 2, 0]
-        affect: x
-  jst: # battery connector
-    key.width: jst_x
-    key.height: jst_y
-    anchor:
-      - ref: slider2
-        shift: [-slider_x2/2, slider_y2/2 + 2]
-        rotate: 90
-      - shift: [jst_x/2, -jst_y/2]
-    #  - ref: center
-    #    shift: [0, -square/2]
-    #  - ref: slider2
-    #    affect: x
-    #  - shift: [slider_x2/2 + jst_x/2 + 2.5, jst_y/2 + 2.5]
-    #    rotate: 180
+      - ref: jst
+        affect: [x, y]
+      - shift: [-jst_y/2 + slider_x2/2, jst_x/2 + slider_y2/2 + 1]
 
 outlines:
   # =============== components =============
   _xiao:
     - what: rectangle   # base xiao
       where: xiao
-      size: [xiao_x, xiao_y+3-3]
-      adjust.shift: [0, 0*1.5]
+      size: [xiao_x, xiao_y]
       corner: 1.5
+  _xiao_head:
     - what: rectangle   # in front of xiao
-      size: [xiao_x, 8]
+      size: [xiao_x, xiao_y+8]
       where: 
         - ref: xiao
-          shift: [0, xiao_y/2+sy/2-2]
+          shift: [0, (sy-xiao_y)/2]
+      corner: 1.5
       expand: 1
-      fillet: 2
   _reset:
     - what: rectangle
       where: reset
@@ -267,60 +259,50 @@ outlines:
         - type: arc
           points: 
             - ref: cr2032
-              shift: [-7.9183, -coin_y/2]
+              shift: [-7.9183-1.8, -coin_y/2]
             - ref: cr2032
-              shift: [-11.15, 0]
+              shift: [-11.15-1.8, 0]
             - ref: cr2032
-              shift: [-7.9183, coin_y/2]
+              shift: [-7.9183-1.8, coin_y/2]
         - type: line
           points:
             - ref: cr2032
-              shift: [7.9183, coin_y/2]
+              shift: [7.9183-1.8, coin_y/2]
         - type: arc
           points: 
             - ref: cr2032
-              shift: [11.15, 0]
+              shift: [11.15-1.8, 0]
             - ref: cr2032
-              shift: [7.9183, -coin_y/2]
+              shift: [7.9183-1.8, -coin_y/2]
     - what: rectangle
       where: cr2032
+      adjust.shift: [sx/2-1.8, 0]
       size: [12.95, 13]
-      adjust.shift: [sx/2, 0]
     - what: circle
       where: cr2032
+      adjust.shift: [-1.8, 0]
       radius: 10
   _cr2032_head: # additional head space for coin, slider2, jst
     - name: _cr2032
     - what: rectangle
       where: cr2032
-      size: [22.3, coin_y]
-      adjust.shift: [0, -coin_y/2]
-      expand: 1>
-    - what: path
-      segments:
-        - type: line 
-          points: 
-            - ref: 
-              - ref: cr2032
-              - ref: jst
-                affect: y
-              - shift: [0, jst_y/2] # + 1] # expand this later, sparing the +1
-            - shift: [0, -jst_y-10]
-            - ref:
-              - ref: jst
-                affect: x
-              shift: [jst_x/2, 0]
-            - shift: [0, jst_y+10]
-      expand: 1
+      size: [24.1, coin_y]
+      adjust.shift: [-(coin_x-24.1)/2, -coin_y/2] # below coin
+    - what: rectangle
+      where: 
+        - slider2
+        - ref: jst
+          affect: x
+        - shift: [jst_y/2-sx/2-2, slider_y2/2-sy/2] # over all comps
+      size: [25, 30]
+    #- name: _jst
+    #- name: _slider2
+      expand: 2>
   _trrs:
     - what: rectangle
       where: trrs
       size: [trrs_x, trrs_y]
   _trrs_head: # additional head space for trrs, reset
-    - what: rectangle
-      where: trrs
-      size: [trrs_x, 20]
-      adjust.shift: [0, trrs_y/2+sy/2-1]
     - what: polygon
       points: 
         - aggregate:
@@ -332,9 +314,9 @@ outlines:
                 shift: [0, -reset_y/2]
                 rotate: 90
           rotate: center_r
-        - shift: [0, 20]
+        - shift: [0, 50]
         - shift: [15, 0]
-        - shift: [0, -20]
+        - shift: [0, -50]
       expand: 0.5
   _components:
     - what: rectangle
@@ -432,12 +414,12 @@ outlines:
   preview:
     - _keycaps
     - ^_pcb_out
-    - -_xiao
+    - -_xiao_head
   footprint_outlines:
     - _pcb_out1
     - ^_limits
     - ^_key_footprint
-    - ^_xiao
+    - ^_xiao_head
     - ^_trrs
     - ^_reset
     - ^_cr2032
@@ -446,34 +428,20 @@ outlines:
     - ^_jst
   pcb_o:
     - name: _pcb_out
-      fillet: 1.5 
+      fillet: 1 
   _plate_out:
-    - name: _pcb_out
-      fillet: 1
+    - pcb_o
     - name: _trrs_head
       operation: subtract
       fillet: 0.5
-    - name: _xiao # needs a smaller fillet, 1-2, to trigger immediately
+    - name: _xiao_head # needs a smaller fillet, 1-2, to trigger immediately
       operation: subtract
-      fillet: 0
-    - name: _cr2032
-      operation: subtract
-      fillet: 0
-    - name: _slider2
-      operation: subtract
-      fillet: 0
+      fillet: 1.5
     - name: _cr2032_head
       operation: subtract
-      fillet: 0
-    - name: _reset # small — candidate for small fillet
-      operation: subtract
-      fillet: 0
-    - name: _jst
-      operation: subtract
-      fillet: 0
+      fillet: 1.5
   plate_o:
     - name: _plate_out
-      fillet: 0
     - name: _key_cutouts
       operation: subtract
 
@@ -581,6 +549,7 @@ pcbs:
       coin_cell: # bs-8 component
         what: cr2032
         where: cr2032
+        adjust.shift: [-1.8, 0]
         params:
           BAT_P: coin_bat
           GND: GND
