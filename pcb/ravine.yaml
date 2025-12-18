@@ -70,34 +70,32 @@ points.zones:
       padding: ky
       tags: switches
     rows:
-      bottom.row_net: P2
-      home.row_net: P1
-      top.row_net: P0
+      bottom.row_net: P8
+      home.row_net: P9
+      top.row_net: P10
     columns.pinky: # invert home's nets
-      key.col_net: P0
-      rows.top.key.row_net: P4
+      key.col_net: P10
+      rows.top.row_net: P6
       rows.home.adjust.rotate: 180
       rows.bottom.skip: true 
     columns.ring:
-      key.col_net: P1
-      rows.home.row_net: P4
-      key:
-        stagger: pinky_stagger
-        splay: -pinky_splay
-        origin: [-kx/2, -ky/2+ky-pinky_stagger] # set origin as tangent pinky_home's corner
+      key.col_net: P9
+      rows.home.row_net: P6
+      key.stagger: pinky_stagger
+      key.splay: -pinky_splay
+      key.origin: [-kx/2, -ky/2+ky-pinky_stagger] # set origin as tangent pinky_home's corner
     columns.middle:
-      key.col_net: P2
-      rows.bottom.row_net: P4
-      key:
-        stagger: ring_stagger
-        splay: -ring_splay
-        origin: [-kx/2, -ky/2-ring_stagger]
+      key.col_net: P8
+      rows.bottom.row_net: P6
+      key.stagger: ring_stagger
+      key.splay: -ring_splay
+      key.origin: [-kx/2, -ky/2-ring_stagger]
     columns.index:
-      key.col_net: P3
+      key.col_net: P7
       key.stagger: index_stagger
-      rows.bottom.row_net: 
+      rows.bottom.key.row_net: 
     columns.inner:
-      key.col_net: P4
+      key.col_net: P6
       key.stagger: inner_stagger
       rows.bottom.tags: [encoder]
       rows.bottom.skip: true
@@ -111,8 +109,8 @@ points.zones:
     key.height: square
   encoder: &matrix # potentially invert nets for pretty diode
     key.$extends: points.zones.matrix.key
-    key.row_net: P3
-    key.col_net: P2
+    key.row_net: P7
+    key.col_net: P8
     key.name: matrix_{{zone.name}} 
     key.tags: [encoder, switches]
     anchor.ref: matrix_middle_bottom
@@ -121,7 +119,7 @@ points.zones:
     <<: *matrix
     key.spread: -kx
     key.name: matrix_{{zone.name}}_{{col.name}}
-    key.col_net: P0
+    key.col_net: P10
     key.tags: [switches]
     anchor.ref: center
     anchor.shift: [square/2-kx/2+thumb_x, -square/2+ky/2+thumb_y]
@@ -132,8 +130,8 @@ points.zones:
     #  enc.key.tags: [encoder]
   corner: # potentially invert nets for pretty diode
     <<: *matrix 
-    key.row_net: P4
-    key.col_net: P3
+    key.row_net: P6
+    key.col_net: P7
     key.rotate: 180-corner_r
     key.tags: [switches]
     anchor.ref: center
@@ -149,7 +147,7 @@ points.zones:
             shift: [0, -ky/2 - xiao_x - 2]
             rotate: 90
           - ref: center
-            shift: [-square/2, 0]
+            shift: [-square/2-0.8, 0]
     key.splay: center_r+ring_splay
     key.adjust:
       orient: 90
@@ -175,8 +173,8 @@ points.zones:
     anchor:
       - ref: matrix_inner_top
         shift: [-kx/2+slider_x/2+2, ky/2+(slider_y+1)/2]
-        rotate: -27
-      - shift: [-1.5, 2.8]
+        rotate: -26
+      - shift: [-1.5, 2.7]
     key.adjust.shift: [0, -slider_y/2]
   reset: # reset switch
     key.width: reset_x
@@ -201,7 +199,7 @@ points.zones:
         shift: [0, -square/2]
       - ref: matrix_corner
         affect: x
-      - shift: [kx/2 + coin_x/2 + 9, coin_y/2 + 2.5]
+      - shift: [kx/2 + coin_x/2 + 11, coin_y/2 + 2.5]
   jst: # battery connector
     key.width: jst_x
     key.height: jst_y
@@ -478,7 +476,7 @@ pcbs:
           shift: [-5, -8.35]
       diode1:
         <<: *diode
-        where: /matrix_(?=pinky_top|corner|ring)/ # [d_c_r]
+        where: /matrix_(?=pinky_top|corner.*|ring_.*)/ # [d_c_r]
         adjust.shift: [5, -8.35]
         adjust.rotate: 180
       diode2:
@@ -489,21 +487,23 @@ pcbs:
         <<: *diode
         where: [encoder] # encoders
         adjust.shift: [0, -10]
+      #charlie_diode: &cdiode
+      #  what: diode_rev
+      #  where: 
       xiao:
-        what: placeholder
-        #what: xiao # commented because it prevents preview
+        what: xiao
         where: xiao
         params:
-          #P0-4 are P0-4
+          #P0, 3, 4, nfc1, nfc2 are free
+          P1: enc1
+          P2: enc2
           #P4 & P5 are high-frequency
           P5: trrs
-          #P6: interrupt
-          #P7: enc1 # right side
-          #P8: enc2
-          #P9: blank
-          #P10: blank
-          #NFC1: blank
-          #NFC2: blank
+          P6: intr
+          P7: D7   # right side
+          P8: D8
+          P9: D9
+          P10: D10
       reset: &reset
         what: ceoloide/reset_switch_tht_top
         where: reset
