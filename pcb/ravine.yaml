@@ -12,27 +12,24 @@ units:
   $default_width: 18 # can't be px, 
   $default_height: 18 # as it throws an error?? 
   $default_autobind: 0
-  #=== TODO ===# 
-  # aesthetic cutout under palm?
-
+  # ==================== parameterisation ====================
   pinky_splay: 5
   pinky_stagger: 0.5ky # pinky to ring
   ring_splay: 3
   ring_stagger: 0.25ky # ring to middle
   index_stagger: -0.4ky # middle to index
   inner_stagger: -0.35ky #index to inner
-
-  center_x: 5   # center
-  center_y: 8.5
-  center_r: -16 - pinky_splay/3 - ring_splay/3 # objective rotation of middle
-
   thumb_r: 20   # thumb
   thumb_x: -1.5
   thumb_y: 3
   corner_r: 10  # corner
   corner_x: 0.5
   corner_y: 0
-  
+
+  center_x: 5   # center
+  center_y: 8.5
+  center_r: -16 - pinky_splay/3 - ring_splay/3 # objective rotation of middle
+
   gap: 0.2 # gaps from edges
   gap2: 0.5 # aesthetic gaps
   # ==================== object sizes ====================
@@ -51,13 +48,16 @@ units:
   jst_y: 12.35 # including male
   coin_x: 25.9 # bs-cr2032-8 
   coin_y: 15.7
-
+  # ==================== helper vars ====================
   m_x: 8.635+gap
   m_xy: 6.33+gap
   m_y: 6.73+gap
   c_x: 9.57+gap
   c_xy: 5.05+gap
   c_y: 7.6+gap
+
+# columns in, rows out.
+# Very simple, make everything go to D* instead of P*. D* then goes to P*.
 
 points.zones:
   zero.rows: # [0, 0, 0 for polygon outline]
@@ -70,32 +70,32 @@ points.zones:
       padding: ky
       tags: switches
     rows:
-      bottom.row_net: P8
-      home.row_net: P9
-      top.row_net: P10
+      bottom.from_net: D8
+      home.from_net: D9
+      top.from_net: D10
     columns.pinky: # invert home's nets
-      key.col_net: P10
-      rows.top.row_net: P6
+      key.to_net: D10
+      rows.top.from_net: D6
       rows.home.adjust.rotate: 180
       rows.bottom.skip: true 
     columns.ring:
-      key.col_net: P9
-      rows.home.row_net: P6
+      key.to_net: D9
+      rows.home.from_net: D6
       key.stagger: pinky_stagger
       key.splay: -pinky_splay
       key.origin: [-kx/2, -ky/2+ky-pinky_stagger] # set origin as tangent pinky_home's corner
     columns.middle:
-      key.col_net: P8
-      rows.bottom.row_net: P6
+      key.to_net: D8
+      rows.bottom.from_net: D6
       key.stagger: ring_stagger
       key.splay: -ring_splay
       key.origin: [-kx/2, -ky/2-ring_stagger]
     columns.index:
-      key.col_net: P7
+      key.to_net: D7
       key.stagger: index_stagger
-      rows.bottom.key.row_net: 
+      rows.bottom.key.from_net: 
     columns.inner:
-      key.col_net: P6
+      key.to_net: D6
       key.stagger: inner_stagger
       rows.bottom.tags: [encoder]
       rows.bottom.skip: true
@@ -109,8 +109,8 @@ points.zones:
     key.height: square
   encoder: &matrix # potentially invert nets for pretty diode
     key.$extends: points.zones.matrix.key
-    key.row_net: P7
-    key.col_net: P8
+    key.from_net: D7
+    key.to_net: D8
     key.name: matrix_{{zone.name}} 
     key.tags: [encoder, switches]
     anchor.ref: matrix_middle_bottom
@@ -119,7 +119,7 @@ points.zones:
     <<: *matrix
     key.spread: -kx
     key.name: matrix_{{zone.name}}_{{col.name}}
-    key.col_net: P10
+    key.to_net: D10
     key.tags: [switches]
     anchor.ref: center
     anchor.shift: [square/2-kx/2+thumb_x, -square/2+ky/2+thumb_y]
@@ -130,8 +130,8 @@ points.zones:
     #  enc.key.tags: [encoder]
   corner: # potentially invert nets for pretty diode
     <<: *matrix 
-    key.row_net: P6
-    key.col_net: P7
+    key.from_net: D6
+    key.to_net: D7
     key.rotate: 180-corner_r
     key.tags: [switches]
     anchor.ref: center
@@ -144,7 +144,7 @@ points.zones:
         method: intersect
         parts:
           - ref: matrix_ring_bottom
-            shift: [0, -ky/2 - xiao_x - 2]
+            shift: [0, -ky/2 - xiao_x - 3]
             rotate: 90
           - ref: center
             shift: [-square/2-0.8, 0]
@@ -199,7 +199,7 @@ points.zones:
         shift: [0, -square/2]
       - ref: matrix_corner
         affect: x
-      - shift: [kx/2 + coin_x/2 + 11, coin_y/2 + 2.5]
+      - shift: [kx/2 + coin_x/2 + 11, coin_y/2 + 2.425]
   jst: # battery connector
     key.width: jst_x
     key.height: jst_y
@@ -218,6 +218,59 @@ points.zones:
       - ref: jst
         affect: [x, y]
       - shift: [-jst_y/2 + slider_x2/2, jst_x/2 + slider_y2/2 + 1]
+  diode: 
+    key.spread: 1.555 + 0.5
+    key.padding: 4.85 + 0.5
+    key.width: 0.95
+    key.height: 4.85
+    key.bind: [0.475, 2.425]
+    key.stagger: -1.555 - 0.5
+    anchor:
+      - ref: xiao
+        shift: [xiao_x/2+3, xiao_y/2+2] # shift to get diode's corner
+        rotate: -45
+      - shift: [0.95/2, 4.85/2]
+    #  - aggregate:
+    #      method: intersect
+    #      parts:
+    #        - ref: xiao
+    #          shift: [xiao_x/2 + 1.5 + 1.775, 0]
+    #        - ref: center
+    #          shift: [-square/2, 0]
+    #          affect: x
+    #  - shift: [1, 0]
+    #  - orient: center_r+ring_splay
+    #    shift: [0.475, 2.425]
+    #rows:
+    #  intr.to_net: intr
+    #  charlie.adjust.shift: [1.555/2, 0]
+    #columns:
+    #  D6.key.from_net: D6
+    #  D6.rows.charlie.to_net: P6
+    #  D7.key.from_net: D7
+    #  D7.rows.charlie.to_net: P7
+    #  D8.key.from_net: D8
+    #  D8.rows.charlie.to_net: P8
+    #  D9.key.from_net: D9
+    #  D9.rows.charlie.to_net: P9
+    #  D10.key.from_net: D10
+    #  D10.rows.charlie.to_net: P10
+    rows:
+      charlie:
+      intr.to_net: intr
+      intr.adjust.shift: [1.555+0.5, -1.775]
+    columns:
+      D6.key.from_net: D6
+      D6.rows.charlie.to_net: P6
+      D6.rows.charlie.stagger: 0
+      D7.key.from_net: D7
+      D7.rows.charlie.to_net: P7
+      D8.key.from_net: D8
+      D8.rows.charlie.to_net: P8
+      D9.key.from_net: D9
+      D9.rows.charlie.to_net: P9
+      D10.key.from_net: D10
+      D10.rows.charlie.to_net: P10
 
 outlines:
   # =============== components =============
@@ -316,9 +369,10 @@ outlines:
         - shift: [15, 0]
         - shift: [0, -50]
       expand: 0.5
-  _components:
+  _diodes:
     - what: rectangle
-      where: true
+      where: /diode/
+      operation: stack
       bound: true
   # ================= core =================
   _key_footprint:
@@ -424,6 +478,7 @@ outlines:
     - ^_slider
     - ^_slider2
     - ^_jst
+    - ^_diodes
   pcb_o:
     - name: _pcb_out
       fillet: 1 
@@ -452,7 +507,7 @@ pcbs:
         what: sw_combo
         where: switches
         params:
-          from: "{{row_net}}" # > switch
+          from: "{{from_net}}" # > switch
           to: "{{colrow}}" # > diode
       encoder: 
         what: ceoloide/rotary_encoder_ec11_ec12
@@ -463,20 +518,27 @@ pcbs:
           mounting_holes_position: 8
           encoder_pads_position: 8.325
           S1: "{{colrow}}"
-          S2: "{{row_net}}"
+          S2: "{{from_net}}"
           A: enc1
           C: enc2
+      diode_array:
+        what: diode_rev
+        where: /diode/
+        params:
+          from: "{{from_net}}"
+          to: "{{to_net}}"
+        adjust.rotate: 90
       diode: &diode #adjust diode rotations correctly
         what: diode_rev
-        where: [[/matrix_(?!pinky|ring|corner)/, -encoder]]
+        where: [[/matrix_(?!pinky)/, -encoder]]
         params:
           from: "{{colrow}}" # > diode
-          to: "{{col_net}}" # > mcu
+          to: "{{to_net}}" # > mcu
         adjust:
           shift: [-5, -8.35]
       diode1:
         <<: *diode
-        where: /matrix_(?=pinky_top|corner.*|ring_.*)/ # [d_c_r]
+        where: /matrix_(?=pinky_top)/ #|corner.*|ring_.*)/ # [d_c_r]
         adjust.shift: [5, -8.35]
         adjust.rotate: 180
       diode2:
@@ -486,10 +548,7 @@ pcbs:
       diode3:
         <<: *diode
         where: [encoder] # encoders
-        adjust.shift: [0, -10]
-      #charlie_diode: &cdiode
-      #  what: diode_rev
-      #  where: 
+        adjust.shift: [0, -10]  
       xiao:
         what: xiao
         where: xiao
@@ -500,10 +559,7 @@ pcbs:
           #P4 & P5 are high-frequency
           P5: trrs
           P6: intr
-          P7: D7   # right side
-          P8: D8
-          P9: D9
-          P10: D10
+          # right side = p7-p10
       reset: &reset
         what: ceoloide/reset_switch_tht_top
         where: reset
@@ -546,7 +602,7 @@ pcbs:
           reversible: true
           BAT_P: jst_bat
           BAT_N: GND
-      coin_cell: # bs-8 component
+      coin_cell: # bs-2032-8 component
         what: cr2032
         where: cr2032
         adjust.shift: [-1.8, 0]
