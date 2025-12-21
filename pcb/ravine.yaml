@@ -70,23 +70,23 @@ points.zones:
       padding: ky
       tags: switches
     rows:
-      bottom.from_net: D8
-      home.from_net: D9
-      top.from_net: D10
+      bottom.from_net: P8
+      home.from_net: P9
+      top.from_net: P10
     columns.pinky: # invert home's nets
       key.to_net: D10
-      rows.top.from_net: D6
+      rows.top.from_net: P6
       rows.home.adjust.rotate: 180
       rows.bottom.skip: true 
     columns.ring:
       key.to_net: D9
-      rows.home.from_net: D6
+      rows.home.from_net: P6
       key.stagger: pinky_stagger
       key.splay: -pinky_splay
       key.origin: [-kx/2, -ky/2+ky-pinky_stagger] # set origin as tangent pinky_home's corner
     columns.middle:
       key.to_net: D8
-      rows.bottom.from_net: D6
+      rows.bottom.from_net: P6
       key.stagger: ring_stagger
       key.splay: -ring_splay
       key.origin: [-kx/2, -ky/2-ring_stagger]
@@ -97,7 +97,7 @@ points.zones:
     columns.inner:
       key.to_net: D6
       key.stagger: inner_stagger
-      rows.bottom.tags: [encoder]
+      rows.bottom.tags: [encoder, switches]
       rows.bottom.skip: true
   center:
     anchor:
@@ -109,7 +109,7 @@ points.zones:
     key.height: square
   encoder: &matrix # potentially invert nets for pretty diode
     key.$extends: points.zones.matrix.key
-    key.from_net: D7
+    key.from_net: P7
     key.to_net: D8
     key.name: matrix_{{zone.name}} 
     key.tags: [encoder, switches]
@@ -130,7 +130,7 @@ points.zones:
     #  enc.key.tags: [encoder]
   corner: # potentially invert nets for pretty diode
     <<: *matrix 
-    key.from_net: D6
+    key.from_net: P6
     key.to_net: D7
     key.rotate: 180-corner_r
     key.tags: [switches]
@@ -230,39 +230,14 @@ points.zones:
         shift: [xiao_x/2+3, xiao_y/2+2] # shift to get diode's corner
         rotate: -45
       - shift: [0.95/2, 4.85/2]
-    #  - aggregate:
-    #      method: intersect
-    #      parts:
-    #        - ref: xiao
-    #          shift: [xiao_x/2 + 1.5 + 1.775, 0]
-    #        - ref: center
-    #          shift: [-square/2, 0]
-    #          affect: x
-    #  - shift: [1, 0]
-    #  - orient: center_r+ring_splay
-    #    shift: [0.475, 2.425]
-    #rows:
-    #  intr.to_net: intr
-    #  charlie.adjust.shift: [1.555/2, 0]
-    #columns:
-    #  D6.key.from_net: D6
-    #  D6.rows.charlie.to_net: P6
-    #  D7.key.from_net: D7
-    #  D7.rows.charlie.to_net: P7
-    #  D8.key.from_net: D8
-    #  D8.rows.charlie.to_net: P8
-    #  D9.key.from_net: D9
-    #  D9.rows.charlie.to_net: P9
-    #  D10.key.from_net: D10
-    #  D10.rows.charlie.to_net: P10
     rows:
       charlie:
       intr.to_net: intr
       intr.adjust.shift: [1.555+0.5, -1.775]
     columns:
+      D6.rows.charlie.stagger: 0
       D6.key.from_net: D6
       D6.rows.charlie.to_net: P6
-      D6.rows.charlie.stagger: 0
       D7.key.from_net: D7
       D7.rows.charlie.to_net: P7
       D8.key.from_net: D8
@@ -517,8 +492,8 @@ pcbs:
           include_plated_mounting_holes: false
           mounting_holes_position: 8
           encoder_pads_position: 8.325
-          S1: "{{colrow}}"
-          S2: "{{from_net}}"
+          S1: "{{from_net}}"
+          S2: "{{colrow}}"
           A: enc1
           C: enc2
       diode_array:
@@ -534,8 +509,7 @@ pcbs:
         params:
           from: "{{colrow}}" # > diode
           to: "{{to_net}}" # > mcu
-        adjust:
-          shift: [-5, -8.35]
+        adjust.shift: [-5, -8.35]
       diode1:
         <<: *diode
         where: /matrix_(?=pinky_top)/ #|corner.*|ring_.*)/ # [d_c_r]
@@ -548,7 +522,7 @@ pcbs:
       diode3:
         <<: *diode
         where: [encoder] # encoders
-        adjust.shift: [0, -10]  
+        adjust.shift: [-6.8, -8.35]
       xiao:
         what: xiao
         where: xiao
