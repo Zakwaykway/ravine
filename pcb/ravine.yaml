@@ -30,7 +30,7 @@ units:
   center_y: 8.5
   center_r: -16 - pinky_splay/3 - ring_splay/3 # objective rotation of middle
 
-  gap: 0.2 # gaps from edges
+  gap: 0.21 # gaps from edges
   gap2: 0.5 # aesthetic gaps
   # ==================== object sizes ====================
   square: 102
@@ -174,7 +174,7 @@ points.zones:
       - ref: matrix_inner_top
         shift: [-kx/2+slider_x/2+2, ky/2+(slider_y+1)/2]
         rotate: -26
-      - shift: [-1.5, 2.7]
+      - shift: [-1.5, 2.8]
     key.adjust.shift: [0, -slider_y/2]
   reset: # reset switch
     key.width: reset_x
@@ -423,7 +423,7 @@ outlines:
                   - ref: matrix_pinky_top
                     shift: [-c_x, 0]
             - ref: matrix_pinky_top
-              shift: [-c_x, m_xy-0]
+              shift: [-c_x, m_xy]
         - type: arc         # pinky to mid
           points:
             - ref: matrix_middle_top
@@ -491,7 +491,7 @@ pcbs:
           reversible: true
           include_plated_mounting_holes: false
           mounting_holes_position: 8
-          encoder_pads_position: 8.325
+          encoder_pads_position: 8.35
           S1: "{{from_net}}"
           S2: "{{colrow}}"
           A: enc1
@@ -527,12 +527,12 @@ pcbs:
         what: xiao
         where: xiao
         params:
-          #P0, 3, 4, nfc1, nfc2 are free
+          #P0, 3, 6, nfc1, nfc2 are free
           P1: enc1
           P2: enc2
           #P4 & P5 are high-frequency
+          P4: intr
           P5: trrs
-          P6: intr
           # right side = p7-p10
       reset: &reset
         what: ceoloide/reset_switch_tht_top
