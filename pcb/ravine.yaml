@@ -70,32 +70,33 @@ points.zones:
       padding: ky
       tags: switches
     rows:
-      bottom.from_net: P8
-      home.from_net: P9
-      top.from_net: P10
+      bottom.row_net: P6
+      home.row_net: P7
+      top.row_net: P8
     columns.pinky: # invert home's nets
-      key.to_net: D10
-      rows.top.from_net: P6
+      key.col_net: P0
       rows.home.adjust.rotate: 180
       rows.bottom.skip: true 
     columns.ring:
-      key.to_net: D9
-      rows.home.from_net: P6
+      key.col_net: P1
+      rows.bottom.col_net: P0
       key.stagger: pinky_stagger
       key.splay: -pinky_splay
       key.origin: [-kx/2, -ky/2+ky-pinky_stagger] # set origin as tangent pinky_home's corner
     columns.middle:
-      key.to_net: D8
-      rows.bottom.from_net: P6
+      key.col_net: P2
+      rows.bottom.col_net: P1
       key.stagger: ring_stagger
       key.splay: -ring_splay
       key.origin: [-kx/2, -ky/2-ring_stagger]
     columns.index:
-      key.to_net: D7
+      key.col_net: P3
       key.stagger: index_stagger
-      rows.bottom.key.from_net: 
+      rows.bottom.col_net: P2
     columns.inner:
-      key.to_net: D6
+      key.col_net: P3
+      key.row_net: P6
+      rows.home.row_net: P4
       key.stagger: inner_stagger
       rows.bottom.tags: [encoder, switches]
       rows.bottom.skip: true
@@ -109,8 +110,8 @@ points.zones:
     key.height: square
   encoder: &matrix # potentially invert nets for pretty diode
     key.$extends: points.zones.matrix.key
-    key.from_net: P7
-    key.to_net: D8
+    key.row_net: P4
+    key.col_net: P1
     key.name: matrix_{{zone.name}} 
     key.tags: [encoder, switches]
     anchor.ref: matrix_middle_bottom
@@ -119,7 +120,7 @@ points.zones:
     <<: *matrix
     key.spread: -kx
     key.name: matrix_{{zone.name}}_{{col.name}}
-    key.to_net: D10
+    key.col_net: P2
     key.tags: [switches]
     anchor.ref: center
     anchor.shift: [square/2-kx/2+thumb_x, -square/2+ky/2+thumb_y]
@@ -130,8 +131,7 @@ points.zones:
     #  enc.key.tags: [encoder]
   corner: # potentially invert nets for pretty diode
     <<: *matrix 
-    key.from_net: P6
-    key.to_net: D7
+    key.col_net: P0
     key.rotate: 180-corner_r
     key.tags: [switches]
     anchor.ref: center
@@ -218,34 +218,6 @@ points.zones:
       - ref: jst
         affect: [x, y]
       - shift: [-jst_y/2 + slider_x2/2, jst_x/2 + slider_y2/2 + 1]
-  diode: 
-    key.spread: 1.555 + 0.5
-    key.padding: 4.85 + 0.5
-    key.width: 0.95
-    key.height: 4.85
-    key.bind: [0.475, 2.425]
-    key.stagger: -1.555 - 0.5
-    anchor:
-      - ref: xiao
-        shift: [xiao_x/2+3, xiao_y/2+2] # shift to get diode's corner
-        rotate: -45
-      - shift: [0.95/2, 4.85/2]
-    rows:
-      charlie:
-      intr.to_net: intr
-      intr.adjust.shift: [1.555+0.5, -1.775]
-    columns:
-      D6.rows.charlie.stagger: 0
-      D6.key.from_net: D6
-      D6.rows.charlie.to_net: P6
-      D7.key.from_net: D7
-      D7.rows.charlie.to_net: P7
-      D8.key.from_net: D8
-      D8.rows.charlie.to_net: P8
-      D9.key.from_net: D9
-      D9.rows.charlie.to_net: P9
-      D10.key.from_net: D10
-      D10.rows.charlie.to_net: P10
 
 outlines:
   # =============== components =============
@@ -482,8 +454,8 @@ pcbs:
         what: sw_combo
         where: switches
         params:
-          from: "{{from_net}}" # > switch
-          to: "{{colrow}}" # > diode
+          from: "{{colrow}}" # > switch
+          to: "{{row_net}}" # > diode
       encoder: 
         what: ceoloide/rotary_encoder_ec11_ec12
         where: [encoder]
@@ -492,47 +464,47 @@ pcbs:
           include_plated_mounting_holes: false
           mounting_holes_position: 8
           encoder_pads_position: 8.35
-          S1: "{{from_net}}"
-          S2: "{{colrow}}"
+          S1: net_name
+          S2: "{{row_net}}"
           A: enc1
           C: enc2
       diode_array:
         what: diode_rev
         where: /diode/
         params:
-          from: "{{from_net}}"
-          to: "{{to_net}}"
+          from: "{{row_net}}"
+          to: "{{col_net}}"
         adjust.rotate: 90
       diode: &diode #adjust diode rotations correctly
         what: diode_rev
         where: [[/matrix_(?!pinky)/, -encoder]]
         params:
           from: "{{colrow}}" # > diode
-          to: "{{to_net}}" # > mcu
+          to: "{{col_net}}" # > mcu
         adjust.shift: [-5, -8.35]
       diode1:
         <<: *diode
-        where: /matrix_(?=pinky_top)/ #|corner.*|ring_.*)/ # [d_c_r]
+        where: /matrix_pinky_top/
         adjust.shift: [5, -8.35]
         adjust.rotate: 180
       diode2:
         <<: *diode
-        where: /matrix_pinky_home/ # [d_m_l] pinky_home
+        where: /matrix_pinky_home/
         adjust.shift: [-4.5, 8.35]
       diode3:
         <<: *diode
         where: [encoder] # encoders
         adjust.shift: [-6.8, -8.35]
+        params.from: net_name
       xiao:
         what: xiao
         where: xiao
         params:
-          #P0, 3, 6, nfc1, nfc2 are free
-          P1: enc1
-          P2: enc2
-          #P4 & P5 are high-frequency
-          P4: intr
+          # nfc1, nfc2 are free
           P5: trrs
+          P9: enc1
+          P10: enc2
+          # P4 & P5 are high-frequency
           # right side = p7-p10
       reset: &reset
         what: ceoloide/reset_switch_tht_top
