@@ -1,46 +1,47 @@
 meta:
   name: ravine
   engine: 4.2.1
-  derived_from: ezxzeng/sweep_squared_rot
+  inspired_by: ezxzeng/sweep_squared_rot
   author: zakwaykway
 units:
   kx: u # spacing
   ky: kx
-  px: 18 # keycap size
-  py: px
+  kcx: 18 # size of a keycap
+  kcy: kcx
 
-  $default_width: 18 # can't be px, 
-  $default_height: 18 # as it throws an error?? 
+  $default_width: 18 # can't be kcx, as ergogen throws an error?? 
+  $default_height: 18
   $default_autobind: 0
+
   # ==================== parameterisation ====================
   pinky_splay: 5
   pinky_stagger: 0.5ky # pinky to ring
   ring_splay: 3
   ring_stagger: 0.25ky # ring to middle
   index_stagger: -0.4ky # middle to index
-  inner_stagger: -0.35ky #index to inner
-  thumb_r: 20   # thumb
+  inner_stagger: -0.35ky # index to inner
+  thumb_r: 20   # thumb splay, relative to main cluster rotation
   thumb_x: -1.5
   thumb_y: 3
-  corner_r: 10  # corner
+  corner_r: 10  # corner splay
   corner_x: 0.5
   corner_y: 0
 
-  center_x: 5   # center
+  center_x: 5   # shift the board's outline
   center_y: 8.5
-  center_r: -16 - pinky_splay/3 - ring_splay/3 # objective rotation of middle
+  center_r: -16 - pinky_splay/3 - ring_splay/3 # objective rotation of middle col
 
-  gap: 0.21 # gaps from edges
+  gap: 0.21 # gaps from edges, based on jlc capabilities, plus 0.01 for kicad rounding
   gap2: 0.5 # aesthetic gaps
   # ==================== object sizes ====================
-  square: 102
-  xiao_x: 17.8
-  xiao_y: 21
-  trrs_x: 6
+  square: 102 # board's outline values
+  xiao_x: 17.8 # nrf52840; 
+  xiao_y: 21 # should remain constant between chips
+  trrs_x: 6 # pj320a
   trrs_y: 12
   reset_x: 8 # alps skqg
   reset_y: 5.3
-  slider_x: 8 # something sk c02
+  slider_x: 8 # skmc02
   slider_y: 3.01
   slider_x2: 9.5 # MSS22D18 SMT
   slider_y2: 7.75
@@ -49,46 +50,46 @@ units:
   coin_x: 25.9 # bs-cr2032-8 
   coin_y: 15.7
   # ==================== helper vars ====================
-  m_x: 8.635+gap
-  m_xy: 6.33+gap
-  m_y: 6.73+gap
-  c_x: 9.57+gap
-  c_xy: 5.05+gap
-  c_y: 7.6+gap
-
-# columns in, rows out.
-# Very simple, make everything go to D* instead of P*. D* then goes to P*.
+    # these are coordinates for the edges of keys' hotswap sockets.
+    # left/right side achieved with a minus symbol (these are used in outlines, only a couple times)
+  m_x: 8.635+gap # rightmost x of mx socket
+  m_xy: 6.33+gap # topmost y of above x value for mx socket
+  m_y: 6.73+gap # topmost y of mx socket
+  c_x: 9.57+gap # rightmost x of choc socket
+  c_xy: 5.05+gap # bottommost y of above x value for choc socket
+  c_y: 7.6+gap # bottommost y of choc socket
 
 points.zones:
-  zero.rows: # [0, 0, 0 for polygon outline]
-  matrix: # mx is top side, 90º turns it c.clockw.
+  zero.rows: # helper [0, 0, 0] zone, to anchor the helper footprint outline
+  matrix: # mx sockets face north (south-facing switch)
     anchor: 
-      shift: [150, -150] # move all
-      rotate: center_r+pinky_splay+ring_splay
+      shift: [150, -150] # moves keyboard into kicad sheet
+      rotate: center_r+pinky_splay+ring_splay # Center_r is only for middle col; it is already rotated by pinky+ring,
+        # we make that subtraction here so the parameterization works out
     key:
       spread: kx
       padding: ky
-      tags: switches
+      tags: switches # this will help place footprints correctly in pcbs and outlines
     rows:
       bottom.row_net: P6
       home.row_net: P7
       top.row_net: P8
-    columns.pinky: # invert home's nets
+    columns.pinky: 
       key.col_net: P0
-      rows.home.adjust.rotate: 180
-      rows.bottom.skip: true 
+      rows.home.adjust.rotate: 180 # this is to save space
+      rows.bottom.skip: true  # deletes the bottom key. 23332 cluster :)
     columns.ring:
       key.col_net: P1
       rows.bottom.col_net: P0
       key.stagger: pinky_stagger
+      key.origin: [-kx/2, -ky/2+ky-pinky_stagger] # set rotation origin as tangent pinky_home's corner
       key.splay: -pinky_splay
-      key.origin: [-kx/2, -ky/2+ky-pinky_stagger] # set origin as tangent pinky_home's corner
     columns.middle:
       key.col_net: P2
       rows.bottom.col_net: P1
       key.stagger: ring_stagger
+      key.origin: [-kx/2, -ky/2-ring_stagger] # -ring_stagger WOULD NOT be necessary if we didn't have the encoder below
       key.splay: -ring_splay
-      key.origin: [-kx/2, -ky/2-ring_stagger]
     columns.index:
       key.col_net: P3
       key.stagger: index_stagger
@@ -98,15 +99,15 @@ points.zones:
       key.row_net: P6
       rows.home.row_net: P4
       key.stagger: inner_stagger
-      rows.bottom.tags: [encoder, switches]
-      rows.bottom.skip: true
+      rows.bottom.skip: true # again, 23332 cluster
   center:
     anchor:
       - ref: matrix_middle_bottom
-        shift: [0, -0.5ky]
+        shift: [0, -0.5ky] # this compensation should be part of center_y... why two shifts, come on man
       - shift: [center_x, center_y]
-        rotate: -center_r
-    key.width: square  # size of board outline
+        rotate: -center_r # this is bad! it should be oriented, *then* shifted by [center_x, center_y]. 
+        # but this has already been put into production. Oh well.
+    key.width: square  # board outline
     key.height: square
   encoder: &matrix # potentially invert nets for pretty diode
     key.$extends: points.zones.matrix.key
@@ -136,7 +137,12 @@ points.zones:
     key.tags: [switches]
     anchor.ref: center
     anchor.shift: [-square/2+kx/2+corner_x, -square/2+ky/2+corner_y]
-  xiao: # xiao
+
+# === COMPONENTS PREFACE: ===
+# all components have widths and heights. This is only for demo.dxf. They serve no technical purpose.
+# The anchors get a little messy; reading documentation WILL help here.
+# Most anchors are at a corner or edge of the component. There is then an adjustment finalize the placement, this is only for clarity's sake.
+  xiao: # mcu
     key.width: xiao_x
     key.height: xiao_y
     anchor:
@@ -144,45 +150,44 @@ points.zones:
         method: intersect
         parts:
           - ref: matrix_ring_bottom
-            shift: [0, -ky/2 - xiao_x - 3]
+            shift: [0, -ky/2 - xiao_x - 3] # 3 is the gap between xiao and bottom of ring col
             rotate: 90
           - ref: center
-            shift: [-square/2-0.8, 0]
-    key.splay: center_r+ring_splay
+            shift: [-square/2-0.8, 0] # 0.8 brings the xiao closer to the edge (a little beyond it, really)
+    key.splay: center_r+ring_splay # intersect only yields [x, y], we have to give it back its rotation
     key.adjust:
-      orient: 90
+      orient: 90 # make it face outside
       shift: [xiao_x/2, -xiao_y/2]
-  trrs:
+  trrs: # for wired split
     key.width: trrs_x
     key.height: trrs_y 
-    key.splay: center_r
     anchor:
       aggregate:
         method: intersect
         parts:
           - ref: matrix_inner_top
-            shift: [14/2+trrs_x+2, 0]
+            shift: [14/2 + 2 + trrs_x, 0] # 14 is half the width of a key's plate cutout. 2 is the value between trrs and key.
           - ref: center
             shift: [square/2, 0] 
     key.adjust:
-      shift: [-trrs_x/2+0.5, -trrs_y/2]
+      orient: center_r  # make it parallel to inner col
+      shift: [-trrs_x/2+0.5, -trrs_y/2] # 0.5 is because the actual pin holes are a bit further in than the edge
   slider: # power switch
     key.width: slider_x
     key.height: slider_y
-    key.bind: [slider_x/2, slider_y/2]
     anchor:
       - ref: matrix_inner_top
-        shift: [-kx/2+slider_x/2+2, ky/2+(slider_y+1)/2]
-        rotate: -26
-      - shift: [-1.5, 2.8]
-    key.adjust.shift: [0, -slider_y/2]
+        shift: [-kx/2+slider_x/2+2, ky/2+(slider_y+1)/2]  # a lot of manual adjustment here,
+        rotate: -26 # since it's based on the outline, which is an arc that's barely parametric at all. 
+      - shift: [-1.5, 2.8] # Ugly, I hate it, but hey. Had to get this board done.
+    key.adjust:
+      shift: [0, -slider_y/2]
   reset: # reset switch
     key.width: reset_x
     key.height: reset_y
-    key.splay: center_r
     anchor:
       aggregate:
-        method: intersect
+        method: intersect # Similar method to how trrs was placed.
         parts:
           - ref: trrs
             shift: [0, -trrs_y/2-1.5]
@@ -190,8 +195,9 @@ points.zones:
           - ref: center
             shift: [square/2, 0] 
     key.adjust:
+      orient: center_r
       shift: [-reset_x/2-1, -reset_y/2]
-  cr2032:
+  cr2032: # coin cell battery. "Coin" name is only used for measurements, since numbers are a *little* more annoying to type.
     key.width: coin_x
     key.height: coin_y
     anchor:
@@ -199,26 +205,30 @@ points.zones:
         shift: [0, -square/2]
       - ref: matrix_corner
         affect: x
-      - shift: [kx/2 + coin_x/2 + 11, coin_y/2 + 2.425]
+      - shift: [kx/2 + 11, 2.425] # manual adjustments. Stinky!!
+    key.adjust:
+      shift: [coin_x/2, coin_y/2]
   jst: # battery connector
     key.width: jst_x
     key.height: jst_y
-    anchor:
+    anchor: 
       - ref: center
-        shift: [0, -square/2 + jst_x/2 + 1.5]
+        shift: [0, -square/2 + 1.5]
       - ref: cr2032
-        shift: [coin_x/2 + jst_y/2 + 4, 0]
+        shift: [coin_x/2 + 4, 0]
         affect: x
-      - rotate: 90
+    key.adjust:
+      orient: 90
+      shift: [jst_x/2, -jst_y/2]
   slider2: # battery swapping switch
     key.width: slider_x2
     key.height: slider_y2
-    key.bind: [slider_x2/2, slider_y2/2]
     anchor:
       - ref: jst
         affect: [x, y]
-      - shift: [-jst_y/2 + slider_x2/2, jst_x/2 + slider_y2/2 + 1]
-
+      - shift: [-jst_y/2, jst_x/2 + 1]
+    key.adjust:
+      shift: [slider_x2/2, slider_y2/2]
 outlines:
   # =============== components =============
   _xiao:
@@ -241,7 +251,7 @@ outlines:
   _slider:
     - what: rectangle
       where: slider
-      adjust.shift: [0, -0.5]
+      adjust.shift: [0, -0.5] # compensation for center of zone vs center of footprint
       size: [slider_x, slider_y+1]
   _slider2:
     - what: rectangle
@@ -252,9 +262,9 @@ outlines:
       where: jst
       size: [jst_x, jst_y]
   _cr2032:
-    - what: path
+    - what: path # this path could be done using the intersect of a rectangle and a circle. ...I forgot about that when making this.
       segments:
-        - type: arc
+        - type: arc # left edge
           points: 
             - ref: cr2032
               shift: [-7.9183-1.8, -coin_y/2]
@@ -262,25 +272,25 @@ outlines:
               shift: [-11.15-1.8, 0]
             - ref: cr2032
               shift: [-7.9183-1.8, coin_y/2]
-        - type: line
+        - type: line # line connecting it to the right "edge"
           points:
             - ref: cr2032
               shift: [7.9183-1.8, coin_y/2]
-        - type: arc
+        - type: arc # right "edge"; below is a rectangle, the true right edge
           points: 
             - ref: cr2032
               shift: [11.15-1.8, 0]
             - ref: cr2032
               shift: [7.9183-1.8, -coin_y/2]
-    - what: rectangle
+    - what: rectangle # the true right edge!
       where: cr2032
       adjust.shift: [sx/2-1.8, 0]
       size: [12.95, 13]
-    - what: circle
+    - what: circle # the battery's outline
       where: cr2032
-      adjust.shift: [-1.8, 0]
+      adjust.shift: [-1.8, 0] # compensation for center of zone vs center of footprint
       radius: 10
-  _cr2032_head: # additional head space for coin, slider2, jst
+  _cr2032_head: # additional head space for coin, slider2, and jst (for the plate)
     - name: _cr2032
     - what: rectangle
       where: cr2032
@@ -295,7 +305,7 @@ outlines:
       size: [25, 30]
     #- name: _jst
     #- name: _slider2
-      expand: 2>
+      expand: 2> # find what this means in the documentation :)
   _trrs:
     - what: rectangle
       where: trrs
@@ -312,17 +322,12 @@ outlines:
                 shift: [0, -reset_y/2]
                 rotate: 90
           rotate: center_r
-        - shift: [0, 50]
+        - shift: [0, 50] # arbitrary values, just to fill out the shape
         - shift: [15, 0]
         - shift: [0, -50]
       expand: 0.5
-  _diodes:
-    - what: rectangle
-      where: /diode/
-      operation: stack
-      bound: true
   # ================= core =================
-  _key_footprint:
+  _key_footprint: # helper outline to visualise the space each key occupies on the pcb
     - what: polygon
       where: /matrix/
       points:
@@ -358,22 +363,23 @@ outlines:
           shift: [-2.54-gap, m_y] # m ring
   _keycaps:
     - what: rectangle
-      where: [switches]
-      size: [px, py]
+      where: [switches] # here it is! a tag
+      size: [kcx, kcy]
     - what: circle
       where: encoder
-      radius: 14.4/2
+      radius: 14.4/2 # measured from the knobs I have onhand
       operation: stack
   _key_cutouts:
     - what: rectangle
       where: /matrix|encoder/
       size: 14
-      corner: 0.5
+      corner: 0.5 # so they don't get filleted again down the line
   _limits:
     - what: rectangle
       where: center
-      size: [square, square]
-  _pcb_out1:
+      size: [square-0.15, square-0.15] # -0.15 is because for SOME UNKNOWN REASON,
+      # the plate comes out sliiightly oversized when uploaded to jlc. >:((
+  _main_outline:
     - what: path
       segments: 
         - type: line # [edge, -edge] to  [-edge, corner]
@@ -382,21 +388,21 @@ outlines:
               shift: [-kx/2, ky/2] 
             - ref: matrix_thumb_thumb
               shift: [kx/2, ky/2]
-            - ref: center           # bot left
+            - ref: center # bot left corner
               shift: [-square/2, -square/2]
-            - ref: matrix_corner           # corner's top
+            - ref: matrix_corner # corner's top
               shift: [kx/2, 0]
               affect: y
-            - aggregate:
+            - aggregate: # pinky col's left edge, intersected with center
                 method: intersect
                 parts:
                   - ref: center
                     shift: [-square/2, 0]
                   - ref: matrix_pinky_top
                     shift: [-c_x, 0]
-            - ref: matrix_pinky_top
+            - ref: matrix_pinky_top # pinky col's top left corner
               shift: [-c_x, m_xy]
-        - type: arc         # pinky to mid
+        - type: arc # big edge from pinky, trough middle's tip, to inner's top right corner
           points:
             - ref: matrix_middle_top
               shift: [0, 7+1.75]
@@ -406,16 +412,16 @@ outlines:
               - ref: matrix_inner_top
                 shift: [kx/2, ky/2 -3]
                 affect: y
-  _pcb_out:
-    - _pcb_out1
+  _pcb_out: # constrain the outline to 102x102
+    - _main_outline
     - ~_limits
   # ================= outlines ===============            
-  preview:
+  preview: # helper, broad overview of the pcb.
+    # Mostly exists because demo.dxf makes the "zero" zone visible, offsetting the display a lot.
     - _keycaps
     - ^_pcb_out
-    - -_xiao_head
-  footprint_outlines:
-    - _pcb_out1
+  footprint_outlines: # helper, to visualise evrything on the pcb simultaneously. Certainly what I looked at the most.
+    - _main_outline
     - ^_limits
     - ^_key_footprint
     - ^_xiao_head
@@ -425,11 +431,10 @@ outlines:
     - ^_slider
     - ^_slider2
     - ^_jst
-    - ^_diodes
-  pcb_o:
+  pcb_o: # filleted pcb outline
     - name: _pcb_out
       fillet: 1 
-  _plate_out:
+  _plate_out: # the plate, minus cutouts, and filleted
     - pcb_o
     - name: _trrs_head
       operation: subtract
@@ -440,7 +445,7 @@ outlines:
     - name: _cr2032_head
       operation: subtract
       fillet: 1.5
-  plate_o:
+  plate_o: 
     - name: _plate_out
     - name: _key_cutouts
       operation: subtract
@@ -548,7 +553,7 @@ pcbs:
           reversible: true
           BAT_P: jst_bat
           BAT_N: GND
-      coin_cell: # bs-2032-8 component
+      cr2032: # bs-2032-8 component
         what: cr2032
         where: cr2032
         adjust.shift: [-1.8, 0]
