@@ -14,12 +14,13 @@ units:
   $default_autobind: 0
 
   # ==================== parameterisation ====================
-  pinky_splay: 5
-  pinky_stagger: 0.5ky # pinky to ring
-  ring_splay: 3
-  ring_stagger: 0.25ky # ring to middle
-  index_stagger: -0.4ky # middle to index
-  inner_stagger: -0.35ky # index to inner
+  # the commented values here are metasepia's, for my own reference 
+  pinky_splay: 5 # 6
+  pinky_stagger: 0.5ky # .65 # pinky to ring
+  ring_splay: 3 # 3
+  ring_stagger: 0.25ky # .25 # ring to middle
+  index_stagger: -0.4ky # .5 # middle to index
+  inner_stagger: -0.35ky # .35 # index to inner
   thumb_r: 20   # thumb splay, relative to main cluster rotation
   thumb_x: -1.5
   thumb_y: 3

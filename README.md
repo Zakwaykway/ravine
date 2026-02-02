@@ -1,11 +1,13 @@
 # Ravine
 
-A split hummingbird-esque keyboard, inspired by ezxzeng's sweep_squared_rot.
+Split, reversible, cheap, mx+choc+hotswap, 30% keyboard with palm key and encoder. 
+Created in ergogen, whose configuration was inspired by ezxzeng's sweep_squared_rot.
 Notable changes:
-  - Completely modified layout,
-  - Charlieplex matrix (with interrupt lane),
+  - Completely modified layout (including a palm key),
   - Compatibility with a 2032 coin cell,
-  - Xiao MCU.
+  - Xiao MCU,
+  - Optional ec11 rotary encoders,
+  - Simultaneous hotswap compatibility with chocv1, v2, and MX.
 
 
-deeply WIP! in the ergogen phase atm. vying to get it inhand by early-mid december
+V2 planned! Working on v1's formware atm.
