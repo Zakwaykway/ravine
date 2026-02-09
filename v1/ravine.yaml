@@ -372,7 +372,7 @@ outlines:
       operation: stack
   _key_cutouts:
     - what: rectangle
-      where: /matrix|encoder/
+      where: [switches, encoder]
       size: 14
       corner: 0.5 # so they don't get filleted again down the line
   _limits:
